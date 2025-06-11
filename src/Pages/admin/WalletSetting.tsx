@@ -29,7 +29,7 @@ import TrustWallet from "@/assets/TrustWallet.svg";
 // Add these types at the top of the file
 type WalletData = {
   _id: string;
-  walletID: string;
+  walletAddress: string;
   walletType: "binance | metamask | coinbase | trustwallet";
   balance: number;
   isActive: boolean;
@@ -367,7 +367,7 @@ export const WalletSetting = () => {
                       <span className="text-sm text-gray-500">Wallet ID Token Type BEP-20</span>
                       <div className="flex items-center gap-2 bg-white p-2 rounded border border-gray-100">
                         <span className="text-sm font-medium truncate">
-                          {wallet.walletID}
+                          {wallet.walletAddress}
                         </span>
                         <TooltipProvider>
                           <Tooltip>
@@ -377,12 +377,12 @@ export const WalletSetting = () => {
                                 size="sm"
                                 className={cn(
                                   "h-6 w-6 p-0 ml-auto shrink-0 transition-all",
-                                  copiedWallets[wallet.walletID] &&
+                                  copiedWallets[wallet.walletAddress] &&
                                     "text-green-500"
                                 )}
-                                onClick={() => handleCopy(wallet.walletID)}
+                                onClick={() => handleCopy(wallet.walletAddress)}
                               >
-                                {copiedWallets[wallet.walletID] ? (
+                                {copiedWallets[wallet.walletAddress] ? (
                                   <Check className="h-3 w-3" />
                                 ) : (
                                   <Copy className="h-3 w-3" />
@@ -391,7 +391,7 @@ export const WalletSetting = () => {
                             </TooltipTrigger>
                             <TooltipContent>
                               <p>
-                                {copiedWallets[wallet.walletID]
+                                {copiedWallets[wallet.walletAddress]
                                   ? "Copied!"
                                   : "Copy"}
                               </p>

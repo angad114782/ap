@@ -1,39 +1,32 @@
 const cron = require("node-cron");
 const UserInvestment = require("../models/UserInvestment");
 
-// Run daily at 12:01 AM
-cron.schedule("1 0 * * *", async () => {
-  console.log("📈 Running compound ROI update...");
+cron.schedule("50 59 23 * * *", async () => {
+  // console.log("📈 Running daily compounding update at 11:59:50 PM");
 
   try {
     const investments = await UserInvestment.find({ isCompleted: false });
 
     for (let invest of investments) {
       try {
-        const { amount: principal, roi, startDate } = invest;
-        const now = new Date();
-        const daysPassed = Math.floor((now - new Date(startDate)) / (1000 * 60 * 60 * 24));
+        const { amount, roi, earnedTillNow } = invest;
 
-        if (daysPassed <= 0) continue;
+        const base = earnedTillNow > 0 ? earnedTillNow : amount;
+        const updatedTotal = parseFloat((base * (1 + roi / 100)).toFixed(2));
 
-        const finalAmount = principal * Math.pow(1 + roi / 100, daysPassed);
-        const earned = parseFloat((finalAmount - principal).toFixed(2));
+        invest.earnedTillNow = updatedTotal;
+        await invest.save();
 
-        // Update if field exists
-        if ('earnedTillNow' in invest) {
-          invest.earnedTillNow = earned;
-          await invest.save();
-        } else {
-          console.warn(`⚠️ Skipped: earnedTillNow not in schema for investment ${invest._id}`);
-        }
-
+        // console.log(`✅ ${invest._id} | Total with ROI: ₹${updatedTotal}`);
       } catch (err) {
-        console.error(`❌ Error processing investment ${invest._id}:`, err.message);
+        console.error(`❌ Error on ${invest._id}:`, err.message);
       }
     }
 
-    console.log("✅ Virtual compound earnings updated.");
-  } catch (error) {
-    console.error("❌ Cron job failed:", error.message);
+    console.log("✅ Daily compounding complete.");
+  } catch (err) {
+    console.error("❌ Cron failed:", err.message);
   }
+}, {
+  timezone: "Asia/Kolkata"
 });

@@ -58,7 +58,6 @@ exports.investInPlan = async (req, res) => {
     res.status(500).json({ message: "Investment error", error: err.message });
   }
 };
-
 exports.getMyActiveInvestments = async (req, res) => {
   try {
     const userId = req.user._id;
@@ -68,21 +67,17 @@ exports.getMyActiveInvestments = async (req, res) => {
       .sort({ startDate: -1 });
 
     const result = investments.map((inv) => {
+      const earnedTillNow = inv.earnedTillNow || inv.amount; // fallback to original amount
       const principal = inv.amount;
       const roi = inv.roi;
-      const startDate = new Date(inv.startDate);
-      const now = new Date();
-      const daysPassed = Math.floor((now - startDate) / (1000 * 60 * 60 * 24));
-      const currentAmount = principal * Math.pow(1 + roi / 100, daysPassed);
-      const earning = currentAmount - principal;
 
       return {
         _id: inv._id,
         planName: inv.planId?.name || "N/A",
         investedAmount: principal,
         roi,
-        currentAmount: parseFloat(currentAmount.toFixed(2)),
-        earning: parseFloat(earning.toFixed(2)),
+        currentAmount: parseFloat(earnedTillNow.toFixed(2)), // ✅ Total compounded amount
+        earning: parseFloat((earnedTillNow - principal).toFixed(2)), // ✅ ROI earned = total - invested
         startDate: inv.startDate,
         isCompleted: inv.isCompleted,
       };
@@ -151,7 +146,6 @@ exports.getAllInvestors = async (req, res) => {
   }
 };
 
-// ✅ Withdraw ROI & Exit Plan
 exports.withdrawRoiAndExit = async (req, res) => {
   try {
     const userId = req.user._id;
@@ -167,10 +161,11 @@ exports.withdrawRoiAndExit = async (req, res) => {
       return res.status(400).json({ message: "No ROI available to withdraw" });
     }
 
-    const wallet = await UserWallet.findOne({ userId });
+    const wallet = await VirtualWallet.findOne({ userId });
     if (!wallet) return res.status(404).json({ message: "Wallet not found" });
 
-    wallet.balance += roiToWithdraw;
+    // 👇 Add safety parseFloat to avoid NaN
+    wallet.balance = parseFloat((wallet.balance + roiToWithdraw).toFixed(2));
     await wallet.save();
 
     investment.earnedTillNow = 0;
@@ -183,20 +178,27 @@ exports.withdrawRoiAndExit = async (req, res) => {
       type: "ROI Withdraw & Exit",
       amount: roiToWithdraw,
       balanceAfter: wallet.balance,
-      walletID: wallet.walletID,
+      walletID: wallet.walletID || "N/A",
       description: `Exited investment ${investment._id} and withdrew ROI`,
     });
+
     await txn.save();
 
-    res.status(200).json({
+    // ✅ Ensure success response is not skipped
+    return res.status(200).json({
       message: "Investment exited and ROI credited",
       amount: roiToWithdraw,
       newWalletBalance: wallet.balance,
     });
   } catch (err) {
-    res.status(500).json({ message: "Error exiting investment", error: err.message });
+    console.error("❌ Exit Error:", err); // Full error, not just message
+    return res.status(500).json({
+      message: "Error exiting investment",
+      error: err.message || "Unknown server error",
+    });
   }
 };
+
 
 // ✅ Preview Compound ROI (Client-side view)
 exports.previewCompoundROI = async (req, res) => {
