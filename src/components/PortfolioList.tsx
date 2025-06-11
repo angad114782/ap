@@ -59,7 +59,7 @@ const handleExit = async (id: string) => {
         const daysPassed = Math.floor(
           (now.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)
         );
-        const daysLeft = 0 - daysPassed;
+        const daysLeft = 60 - daysPassed;
 
         return (
           <div
@@ -78,7 +78,7 @@ const handleExit = async (id: string) => {
             </div>
 
             <div className="flex justify-end">
-              {daysPassed >= 0 ? (
+              {daysPassed >= 60 ? (
                 <Button
                   variant="ghost"
                   size="sm"
