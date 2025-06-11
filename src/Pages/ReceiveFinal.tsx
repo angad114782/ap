@@ -45,7 +45,7 @@ const ReceiveFinal = () => {
             Authorization: `Bearer ${token}`,
           },
         });
-        setWallets(response.data.wallets);
+        setWallets(response.data.data);
       } catch (error) {
         console.error("Error fetching wallets:", error);
         toast.error("Failed to fetch wallets");
