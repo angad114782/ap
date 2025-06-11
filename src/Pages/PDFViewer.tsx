@@ -71,7 +71,7 @@ const PDFViewer = () => {
           <div className="flex gap-2 items-center-safe">
             <img src={RocketLogo} className="h-[31px] w-[31px]" alt="" />
             <h3 className="text-[30px] font-extrabold leading-[42px]">
-              APARTX-X
+              APART-X
             </h3>
           </div>
           <p className="mt-4 text-[20px] leading-[26px]">
