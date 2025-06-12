@@ -23,7 +23,7 @@ exports.getReferredUsers = async (req, res) => {
     console.log("✅ Authenticated userId:", userId);
 
     // Step 1: Fetch referred users
-    const referredUsers = await User.find({ referredBy: userId }).select("_id mobile email name referredBy");
+    const referredUsers = await User.find({ referredBy: userId }).select("_id mobile email name");
     console.log("📦 Referred Users Found:", referredUsers.length);
 
     // Step 2: If none found, return early
@@ -33,11 +33,11 @@ exports.getReferredUsers = async (req, res) => {
 
     // Step 3: Extract user IDs
     const userIds = referredUsers.map((u) => u._id);
-    console.log("🧠 User IDs:", userIds);
+    console.log("🧾 Referred user IDs:", userIds);
 
     // Step 4: Fetch from referral tree
     const refTreeEntries = await Refertree.find({ userId: { $in: userIds } }).select("userId joinedAt");
-    console.log("🌱 Referral Tree Entries:", refTreeEntries.length);
+    console.log("🌲 Referral tree entries:", refTreeEntries.length);
 
     const joinedMap = {};
     refTreeEntries.forEach((entry) => {
@@ -51,11 +51,11 @@ exports.getReferredUsers = async (req, res) => {
       joinedAt: joinedMap[user._id.toString()] || null,
     }));
 
-    res.status(200).json({ referred: finalReferred });
+    return res.status(200).json({ referred: finalReferred });
 
   } catch (err) {
-    console.error("❌ Fetch referred users error:", err);
-    res.status(500).json({ message: "Server error", error: err.message });
+    console.error("❌ Referral Fetch Error:", err.stack); // Use .stack for deeper tracing
+    return res.status(500).json({ message: "Server error", error: err.message });
   }
 };
 
