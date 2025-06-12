@@ -1,4 +1,6 @@
 const Refertree = require("../models/ReferralTree");
+const User = require("../models/User"); // ✅ FIXED import
+
 
 
 exports.getMyReferrals  = async (req, res) => {
@@ -15,28 +17,19 @@ exports.getMyReferrals  = async (req, res) => {
   }
 };
 
-
-// GET /api/referrals/me
-const User = require("../models/User");
 exports.getReferredUsers = async (req, res) => {
   try {
     const userId = req.user._id;
 
-    // Find the user's referralCode
-    const currentUser = await User.findById(userId);
-if (!currentUser) return res.status(404).json({ message: "User not found" });
+    // 🔍 Log the userId (ObjectId) being used to match referred users
+    console.log("🔗 Looking for users referred by userId:", userId);
 
-const referralCode = currentUser.referralCode;
+    // ✅ Match users whose `referredBy` = current user's _id (ObjectId)
+    const referredUsers = await User.find({ referredBy: userId }).select("_id mobile email name");
 
-
-    // Find users referred by this code
-    const referredUsers = await User.find({ referredBy: referralCode }).select("_id mobile email");
-
-    // Now get joinedAt from refertree for each user
     const userIds = referredUsers.map((u) => u._id);
     const refTreeEntries = await Refertree.find({ userId: { $in: userIds } }).select("userId joinedAt");
 
-    // Map joinedAt to user data
     const joinedMap = {};
     refTreeEntries.forEach((entry) => {
       joinedMap[entry.userId.toString()] = entry.joinedAt;

@@ -148,6 +148,17 @@ exports.updateSendStatus = async (req, res) => {
       virtualWallet.balance += amount;
       await virtualWallet.save();
 
+// ✅ ✅ ✅ Add WalletTransaction for user's deposit
+      const userTxn = new WalletTransaction({
+        userId: user._id,
+        type: "Deposit",
+        amount,
+        balanceAfter: virtualWallet.balance,
+        walletID: depositRequest.walletID || "N/A",
+        description: `Deposit approved via ${depositRequest.wallet}`,
+      });
+      await userTxn.save();
+
       // ✅ Step 2: Check if it's the first approved deposit ≥ ₹300
       const firstApproved = await SendCurrency.findOne({
         userId: user._id,

@@ -8,14 +8,23 @@ import TransactionList from "@/components/TransactionList";
 import ReceiptBg from "../assets/ReceiptBg.tsx.svg";
 import ReferAndEarn from "../assets/ReferAndEarn.svg";
 
-import type { TransactionData } from "@/components/TransactionCard";
+import type { TransactionData, TransactionType } from "@/components/TransactionCard";
 
 const Passbook = () => {
   const navigate = useNavigate();
   const [transactions, setTransactions] = useState<TransactionData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  console.log(transactions);
+  // ✅ Map backend string types to frontend enums
+  const mapType = (rawType: string): TransactionType => {
+    const type = rawType.toLowerCase();
+    if (type.includes("referral")) return "Referral";
+    if (type.includes("deposit")) return "Deposit";
+    if (type.includes("withdraw")) return "Withdrawal";
+    if (type.includes("invest")) return "Invest";
+    if (type.includes("paid")) return "Paid";
+    return "Income";
+  };
 
   const fetchPassbookData = async () => {
     setIsLoading(true);
@@ -27,29 +36,27 @@ const Passbook = () => {
         return;
       }
 
-      const response = await axios.get(`${import.meta.env.VITE_URL}/passbook`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await axios.get(
+        `${import.meta.env.VITE_URL}/wallet/passbook`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-      console.log(response.data, "passbook");
+      const formattedTransactions: TransactionData[] =
+        response.data.transactions.map((tx: any) => ({
+          amount: tx.amount,
+          balanceAfter: tx.balanceAfter,
+          createdAt: tx.createdAt,
+          description: tx.description || "",
+          type: mapType(tx.type),
+          userId: tx.userId,
+          walletID: tx.walletID || "System",
+        }));
 
-      // const formattedTransactions: TransactionData[] =
-      //   response.data.transactions.map((tx: any) => {
-      //     const walletType = tx.walletType?.toLowerCase() || "binance";
-      //     return {
-      //       id: tx._id,
-      //       username: tx.walletID || "Unknown",
-      //       time: new Date(tx.createdAt).toLocaleString(),
-      //       type: tx.type,
-      //       amount: tx.amount,
-      //       walletType,
-      //       walletImage: walletTypeImages[walletType] || BinanceImage,
-      //     };
-      //   });
-
-      setTransactions(response.data.transactions);
+      setTransactions(formattedTransactions);
     } catch (error) {
       console.error("Error fetching passbook:", error);
       toast.error("Failed to load transactions");
@@ -135,7 +142,7 @@ const Passbook = () => {
         </Button>
         <Button
           onClick={() => navigate("/invite-and-earn")}
-          className="flex gap-2 items-center "
+          className="flex gap-2 items-center"
         >
           <img src={ReferAndEarn} alt="Invite & Earn" />
           <span className="text-[10px] text-center text-white leading-tight">

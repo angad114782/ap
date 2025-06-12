@@ -13,67 +13,67 @@ type ReferredFriend = {
 
 const InviteAndEarn = () => {
   const navigate = useNavigate();
-  const [referralCode, setReferralCode] = useState("");
+  const [referralCode, setReferralCode] = useState("N/A");
   const [referredFriends, setReferredFriends] = useState<ReferredFriend[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchReferralInfo = async () => {
-  try {
-    const token = localStorage.getItem("token");
-    const BASE_URL = import.meta.env.VITE_URL; // Ensure this is https://apart-x.pro/api
+      try {
+        const token = localStorage.getItem("token");
+        const BASE_URL = import.meta.env.VITE_URL;
 
-    if (!token) {
-      toast.error("Please login again");
-      navigate("/login-register");
-      return;
-    }
+        if (!token) {
+          toast.error("Please login again");
+          navigate("/login-register");
+          return;
+        }
 
-    // ✅ Fetch user profile
-    const userRes = await fetch(`${BASE_URL}/me`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-    });
+        // ✅ Fetch user profile
+        const userRes = await fetch(`${BASE_URL}/me`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+        });
 
-    if (!userRes.ok) {
-      if (userRes.status === 401) {
-        localStorage.removeItem("token");
-        toast.error("Session expired. Please login again.");
-        navigate("/login-register");
-        return;
+        if (userRes.status === 401) {
+          localStorage.removeItem("token");
+          toast.error("Session expired. Please login again.");
+          navigate("/login-register");
+          return;
+        }
+
+        if (!userRes.ok) {
+          throw new Error(`User fetch failed with status ${userRes.status}`);
+        }
+
+        const userData = await userRes.json();
+        setReferralCode(userData.referralCode || "N/A");
+
+        // ✅ Fetch referred users
+        const referredRes = await fetch(`${BASE_URL}/referrals/me`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!referredRes.ok) {
+          throw new Error(`Referral fetch failed: ${referredRes.status}`);
+        }
+
+        const referredData = await referredRes.json();
+        setReferredFriends(referredData.referred || []);
+      } catch (err) {
+        console.error("❌ Referral Info Fetch Error:", err);
+        toast.error("Failed to load referral info");
+      } finally {
+        setIsLoading(false);
       }
-      throw new Error(`User fetch failed with status ${userRes.status}`);
-    }
-
-    const userData = await userRes.json();
-    setReferralCode(userData.referralCode || "N/A");
-
-    // ✅ Fetch referred users
-    const referredRes = await fetch(`${BASE_URL}/referrals/me`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    if (!referredRes.ok) {
-      throw new Error(`Referred users fetch failed with status ${referredRes.status}`);
-    }
-
-    const referredData = await referredRes.json();
-    setReferredFriends(referredData.referred || []);
-  } catch (error) {
-    console.error("❌ Referral Info Fetch Error:", error);
-    toast.error("Failed to load referral data");
-  } finally {
-    setIsLoading(false);
-  }
-};
-
+    };
 
     fetchReferralInfo();
   }, [navigate]);
@@ -96,6 +96,7 @@ const InviteAndEarn = () => {
       {/* Top Section */}
       <div className="shrink-0">
         <div className="absolute h-[180px] inset-x-0 top-0 bg-gradient-to-b from-[#6552FE] via-[#683594] to-[#6B1111] opacity-90 z-10" />
+
         <div className="relative z-20 pt-6 pl-4">
           <button
             onClick={() => navigate(-1)}
@@ -106,10 +107,8 @@ const InviteAndEarn = () => {
         </div>
 
         <div className="flex justify-around items-center mt-[40px] relative z-10">
-          <div className="text-[26px] font-racing leading-[100%]">
-            Invite & Earn
-          </div>
-          <img src={inviteearn} className="h-[100px] sm:h-[146px] w-auto" alt="" />
+          <div className="text-[26px] font-racing leading-[100%]">Invite & Earn</div>
+          <img src={inviteearn} className="h-[100px] sm:h-[146px] w-auto" alt="Invite & Earn" />
         </div>
 
         <div className="text-center my-3 text-xl font-bold z-10">
@@ -146,7 +145,7 @@ const InviteAndEarn = () => {
           <div className="grid grid-cols-3 text-center bg-[#3d3b3b] py-2 text-xs font-bold">
             <div>Mobile Number</div>
             <div>Profile Name</div>
-            <div>Date to Join</div>
+            <div>Date Joined</div>
           </div>
           {referredFriends.length > 0 ? (
             referredFriends.map((friend, idx) => (
@@ -159,15 +158,13 @@ const InviteAndEarn = () => {
                 <div>{friend.mobile}</div>
                 <div>{friend.name || "N/A"}</div>
                 <div>
-                {friend.joinedAt
-  ? new Date(friend.joinedAt).toLocaleDateString("en-IN", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    })
-  : "—"}
-
-
+                  {friend.joinedAt
+                    ? new Date(friend.joinedAt).toLocaleDateString("en-IN", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                      })
+                    : "—"}
                 </div>
               </div>
             ))
