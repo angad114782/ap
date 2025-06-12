@@ -54,8 +54,9 @@ exports.getReferredUsers = async (req, res) => {
     return res.status(200).json({ referred: finalReferred });
 
   } catch (err) {
-    console.error("❌ Referral Fetch Error:", err.stack); // Use .stack for deeper tracing
-    return res.status(500).json({ message: "Server error", error: err.message });
-  }
+  console.error("❌ Referral Fetch Error:", err); // 👈 log full error
+  console.error("❌ Stack Trace:", err.stack);    // 👈 log stack trace
+  res.status(500).json({ message: "Server error", error: err.message });
+}
 };
 
