@@ -452,3 +452,21 @@ exports.verifyOtpAndResetPassword = async (req, res) => {
   }
 };
 
+
+exports.getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find({ role: "user" }).sort({ createdAt: -1 });
+    const investors = users.map((u) => ({
+      name: u.name || u.email,
+      mobile: u.mobile,
+      profilePic: u.profilePic,
+      joinDate: u.createdAt,
+      totalInvested: 0, // You can update this later with actual logic
+      status: "Active", // Optional: You can make this dynamic
+    }));
+    res.json({ investors });
+  } catch (err) {
+    console.error("Get All Users Error:", err.message);
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+};

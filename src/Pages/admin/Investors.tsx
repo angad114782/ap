@@ -204,10 +204,10 @@ export const InvestorsList = () => {
 
               {/* Investment Info */}
               <div className="flex flex-wrap sm:flex-nowrap md:flex-wrap gap-4 sm:gap-6 justify-between sm:justify-start">
-                <div className="text-left">
+                {/* <div className="text-left">
                   <div className="font-semibold">${investor.totalInvested}</div>
                   <div className="text-xs text-gray-500">Total Invested</div>
-                </div>
+                </div> */}
                 <div className="text-left">
                   <div className="text-xs text-gray-500">
                     Joined: {new Date(investor.joinDate).toLocaleDateString()}

@@ -3,7 +3,10 @@
 
 const InvestmentPlan = require("../models/InvestmentPlan");
 const UserInvestment = require("../models/UserInvestment");
+
+const ReferralTree = require("../models/ReferralTree");
 const VirtualWallet = require("../models/VirtualWallet");
+const ReferralEarningLog = require("../models/ReferralEarningLog");
 const WalletTransaction = require("../models/WalletTransaction");
 
 exports.investInPlan = async (req, res) => {
@@ -40,14 +43,56 @@ exports.investInPlan = async (req, res) => {
     wallet.balance -= amount;
     await wallet.save();
 
-    const transaction = new WalletTransaction({
+    await WalletTransaction.create({
       userId,
       type: "Invest",
       amount,
       balanceAfter: wallet.balance,
       description: `Invested in ${plan.name} plan`,
     });
-    await transaction.save();
+
+    // ✅ Referral bonus logic: Only last 3 uplines get reward (immediate parents)
+    const levels = [6, 3, 1]; // percentages for level 1 to 3
+    const uplines = [];
+    let currentUserId = userId;
+
+    for (let i = 0; i < 3; i++) {
+      const ref = await ReferralTree.findOne({ childId: currentUserId });
+      if (!ref || !ref.parentId) break;
+
+      uplines.push(ref.parentId);
+      currentUserId = ref.parentId;
+    }
+
+    for (let i = 0; i < uplines.length; i++) {
+      const parentId = uplines[i];
+      const bonusPercent = levels[i];
+      const bonusAmount = (amount * bonusPercent) / 100;
+
+      let parentWallet = await VirtualWallet.findOne({ userId: parentId });
+      if (!parentWallet) {
+        parentWallet = new VirtualWallet({ userId: parentId, balance: 0 });
+      }
+
+      parentWallet.balance += bonusAmount;
+      await parentWallet.save();
+
+      await WalletTransaction.create({
+        userId: parentId,
+        type: "Referral Bonus",
+        amount: bonusAmount,
+        balanceAfter: parentWallet.balance,
+        description: `Level ${i + 1} referral bonus from ${req.user.mobile}`,
+      });
+      // ✅ Track in referral earning log
+  await ReferralEarningLog.create({
+    earnedBy: parentId,
+    fromUser: userId,
+    level: i + 1,
+    amount: bonusAmount,
+    reason: "Investment Referral",
+  });
+    }
 
     res.status(201).json({
       message: "Investment successful",
@@ -58,6 +103,7 @@ exports.investInPlan = async (req, res) => {
     res.status(500).json({ message: "Investment error", error: err.message });
   }
 };
+
 exports.getMyActiveInvestments = async (req, res) => {
   try {
     const userId = req.user._id;

@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+require("./ReferralEarningLog");
 
 const userSchema = new mongoose.Schema({
   mobile: {

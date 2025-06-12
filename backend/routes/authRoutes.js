@@ -27,8 +27,10 @@ router.post("/set-mpin", setMpin);
 router.post("/forgot-password", forgotPassword);
 router.post("/change-password", auth, changePassword);
 router.put("/update-profile", auth, upload.single("profilePic"), updateProfile);
+const { getAllUsers } = require("../controllers/authController");
 
 // Admin Routes
+router.get("/admin/all-users", auth, isAdmin, getAllUsers);
 router.get("/admin/investors-count", auth, isAdmin, getInvestorCount);
 router.get("/my-wallet", auth, getMyWallet);
 router.get("/admin/wallets", auth, isAdmin, getAllUserWallets);

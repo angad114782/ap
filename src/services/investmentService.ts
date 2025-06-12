@@ -78,27 +78,28 @@ export const investmentService = {
 }
 ,
 
-  async fetchInvestments(): Promise<InvestorsResponse> {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      throw new Error("Please login to continue");
-    }
+async fetchInvestments(): Promise<InvestorsResponse> {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    throw new Error("Please login to continue");
+  }
 
-    try {
-      const response = await axios.get(
-        `${import.meta.env.VITE_URL}/investments`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      return response.data;
-    } catch (error: any) {
-      console.error("❌ fetchInvestments error:", error.response?.data || error.message);
-      throw new Error(
-        error.response?.data?.message || "Failed to fetch investments"
-      );
-    }
-  },
+  try {
+    const response = await axios.get(
+      `${import.meta.env.VITE_URL}/admin/all-users`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error: any) {
+    console.error("❌ fetchInvestments error:", error.response?.data || error.message);
+    throw new Error(
+      error.response?.data?.message || "Failed to fetch investors"
+    );
+  }
+},
+
 };

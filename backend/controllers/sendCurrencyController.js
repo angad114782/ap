@@ -1,12 +1,9 @@
 const SendCurrency = require("../models/SendCurrency");
 const UserWallet = require("../models/UserWallet");
 const User = require("../models/User");
-const ReferralTree = require("../models/ReferralTree");
-const { logTransaction } = require("../utils/transactionLogger");
 const WalletTransaction = require("../models/WalletTransaction");
 
 const VirtualWallet = require("../models/VirtualWallet");
-const { credit } = require("../services/walletService");
 
 exports.createSendCurrency = async (req, res) => {
   try {
@@ -113,7 +110,6 @@ exports.getAllSendRequestsRecent = async (req, res) => {
       .json({ message: "Error fetching requests", error: err.message });
   }
 };
-
 exports.updateSendStatus = async (req, res) => {
   try {
     const { id } = req.params;
@@ -148,7 +144,7 @@ exports.updateSendStatus = async (req, res) => {
       virtualWallet.balance += amount;
       await virtualWallet.save();
 
-// ✅ ✅ ✅ Add WalletTransaction for user's deposit
+      // ✅ Step 2: Log deposit transaction
       const userTxn = new WalletTransaction({
         userId: user._id,
         type: "Deposit",
@@ -158,50 +154,13 @@ exports.updateSendStatus = async (req, res) => {
         description: `Deposit approved via ${depositRequest.wallet}`,
       });
       await userTxn.save();
-
-      // ✅ Step 2: Check if it's the first approved deposit ≥ ₹300
-      const firstApproved = await SendCurrency.findOne({
-        userId: user._id,
-        status: "Approved",
-        _id: { $ne: depositRequest._id },
-      });
-
-      if (!firstApproved && amount >= 300) {
-        // ✅ Step 3: Apply 3-level referral bonus
-        let currentUserId = user._id;
-        const levels = [6, 3, 1];
-
-        for (let i = 0; i < levels.length; i++) {
-          const ref = await ReferralTree.findOne({ childId: currentUserId });
-          if (!ref || !ref.parentId) break;
-
-          const parentWallet = await VirtualWallet.findOne({ userId: ref.parentId });
-          if (parentWallet) {
-            const bonus = (amount * levels[i]) / 100;
-            parentWallet.balance += bonus;
-            await parentWallet.save();
-
-            // Log transaction
-            const tx = new WalletTransaction({
-              userId: ref.parentId,
-              type: "Referral Bonus",
-              amount: bonus,
-              balanceAfter: parentWallet.balance,
-              description: `Level ${i + 1} referral bonus from user ${user.mobile}`,
-            });
-            await tx.save();
-          }
-
-          currentUserId = ref.parentId;
-        }
-      }
     }
 
     await depositRequest.save();
 
     return res.status(200).json({
       success: true,
-      message: `Deposit ${status.toLowerCase()} successfully` ,
+      message: `Deposit ${status.toLowerCase()} successfully`,
       data: depositRequest,
     });
   } catch (err) {
