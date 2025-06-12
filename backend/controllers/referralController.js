@@ -1,13 +1,11 @@
 const Refertree = require("../models/ReferralTree");
-const User = require("../models/User"); // ✅ FIXED import
+const User = require("../models/User");
 
-
-
-exports.getMyReferrals  = async (req, res) => {
+exports.getMyReferrals = async (req, res) => {
   try {
     const userId = req.user._id;
 
-    const downline = await ReferralTree.find({ path: userId })
+    const downline = await Refertree.find({ path: userId })
       .populate("userId", "name email mobile")
       .sort({ level: 1 });
 
@@ -26,25 +24,25 @@ exports.getReferredUsers = async (req, res) => {
     const referredUsers = await User.find({ referredBy: userId }).select("_id mobile email name referredBy");
     console.log("📦 Referred Users Found:", referredUsers.length);
 
-    // Step 2: If none found, return early
     if (referredUsers.length === 0) {
       return res.status(200).json({ referred: [] });
     }
 
-    // Step 3: Extract user IDs
     const userIds = referredUsers.map((u) => u._id);
     console.log("🧠 User IDs:", userIds);
 
-    // Step 4: Fetch from referral tree
     const refTreeEntries = await Refertree.find({ userId: { $in: userIds } }).select("userId joinedAt");
     console.log("🌱 Referral Tree Entries:", refTreeEntries.length);
 
     const joinedMap = {};
     refTreeEntries.forEach((entry) => {
-      joinedMap[entry.userId.toString()] = entry.joinedAt;
+      if (!entry?.userId) {
+        console.warn("⚠️ Invalid entry in ReferralTree:", entry);
+      } else {
+        joinedMap[entry.userId.toString()] = entry.joinedAt;
+      }
     });
 
-    // Step 5: Combine data
     const finalReferred = referredUsers.map((user) => ({
       mobile: user.mobile,
       name: user.name || user.email || "N/A",
@@ -58,4 +56,3 @@ exports.getReferredUsers = async (req, res) => {
     res.status(500).json({ message: "Server error", error: err.message });
   }
 };
-
