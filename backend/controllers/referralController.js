@@ -20,24 +20,19 @@ exports.getMyReferrals  = async (req, res) => {
 exports.getReferredUsers = async (req, res) => {
   try {
     const userId = req.user._id;
-    console.log("✅ API Called by userId:", userId);
+    console.log("➡️ Referral API hit by:", userId);
 
-    const referredUsers = await User.find({ referredBy: userId }).select("_id mobile email name referredBy");
-    console.log("📦 Referred Users Found:", referredUsers.length);
+    const referredUsers = await User.find({ referredBy: userId }).select("name mobile email _id");
+    console.log("📌 Referred Users:", referredUsers.length);
 
-    if (referredUsers.length === 0) {
-      console.log("❕ No referred users found");
-      return res.status(200).json({ referred: [] });
-    }
+    const userIds = referredUsers.map(u => u._id);
+    console.log("🧾 User IDs:", userIds);
 
-    const userIds = referredUsers.map((u) => u._id);
-    console.log("🧾 Referred user IDs:", userIds);
-
-    const refTreeEntries = await Refertree.find({ userId: { $in: userIds } }).select("userId joinedAt");
-    console.log("🌲 Referral tree entries:", refTreeEntries.length);
+    const refData = await Refertree.find({ userId: { $in: userIds } }).select("userId joinedAt");
+    console.log("🌲 Referral tree entries:", refData);
 
     const joinedMap = {};
-    refTreeEntries.forEach((entry) => {
+    refData.forEach((entry) => {
       joinedMap[entry.userId.toString()] = entry.joinedAt;
     });
 
@@ -47,13 +42,17 @@ exports.getReferredUsers = async (req, res) => {
       joinedAt: joinedMap[user._id.toString()] || null,
     }));
 
-    console.log("✅ Final response:", finalReferred);
+    console.log("✅ Final Response:", finalReferred);
 
     return res.status(200).json({ referred: finalReferred });
-
   } catch (err) {
-    console.error("❌ Referral Fetch Error:", err); // FULL STACK
-    return res.status(500).json({ message: "Referral fetch failed", error: err.message, stack: err.stack });
+    console.error("❌ Referral API Crash:", err.message);
+    console.error(err.stack);
+    return res.status(500).json({
+      message: "Referral fetch failed",
+      reason: err.message,
+      stack: err.stack, // ⭐️ send full trace to frontend
+    });
   }
 };
 
