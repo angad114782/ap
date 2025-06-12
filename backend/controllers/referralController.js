@@ -20,21 +20,31 @@ exports.getMyReferrals  = async (req, res) => {
 exports.getReferredUsers = async (req, res) => {
   try {
     const userId = req.user._id;
+    console.log("✅ Authenticated userId:", userId);
 
-    // 🔍 Log the userId (ObjectId) being used to match referred users
-    console.log("🔗 Looking for users referred by userId:", userId);
+    // Step 1: Fetch referred users
+    const referredUsers = await User.find({ referredBy: userId }).select("_id mobile email name referredBy");
+    console.log("📦 Referred Users Found:", referredUsers.length);
 
-    // ✅ Match users whose `referredBy` = current user's _id (ObjectId)
-    const referredUsers = await User.find({ referredBy: userId }).select("_id mobile email name");
+    // Step 2: If none found, return early
+    if (referredUsers.length === 0) {
+      return res.status(200).json({ referred: [] });
+    }
 
+    // Step 3: Extract user IDs
     const userIds = referredUsers.map((u) => u._id);
+    console.log("🧠 User IDs:", userIds);
+
+    // Step 4: Fetch from referral tree
     const refTreeEntries = await Refertree.find({ userId: { $in: userIds } }).select("userId joinedAt");
+    console.log("🌱 Referral Tree Entries:", refTreeEntries.length);
 
     const joinedMap = {};
     refTreeEntries.forEach((entry) => {
       joinedMap[entry.userId.toString()] = entry.joinedAt;
     });
 
+    // Step 5: Combine data
     const finalReferred = referredUsers.map((user) => ({
       mobile: user.mobile,
       name: user.name || user.email || "N/A",
@@ -42,8 +52,10 @@ exports.getReferredUsers = async (req, res) => {
     }));
 
     res.status(200).json({ referred: finalReferred });
+
   } catch (err) {
-    console.error("Fetch referred users error:", err);
-    res.status(500).json({ message: "Server error" });
+    console.error("❌ Fetch referred users error:", err);
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 };
+
