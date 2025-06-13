@@ -35,6 +35,7 @@ import ForgetPassword from "./Pages/ForgetPassword";
 import PDFViewer from "./Pages/PDFViewer";
 import { AdminRoute, UserRoute } from "./components/ProtectedRoutes";
 import { AuthProvider, PublicRoute } from "./context/AuthContext";
+import PartialWithdraw from "./Pages/PartialWithdraw";
 
 const App = () => {
   return (
@@ -235,6 +236,14 @@ const App = () => {
               element={
                 <MobileLayout>
                   <Portfolio />
+                </MobileLayout>
+              }
+            />
+            <Route
+              path="/partial-withdraw"
+              element={
+                <MobileLayout>
+                  <PartialWithdraw />
                 </MobileLayout>
               }
             />

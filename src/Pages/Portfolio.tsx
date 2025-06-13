@@ -15,26 +15,27 @@ const Portfolio = () => {
     const fetchInvestments = async () => {
       try {
         const token = localStorage.getItem("token");
-        const response = await axios.get(`${import.meta.env.VITE_URL}/my-investments`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await axios.get(
+          `${import.meta.env.VITE_URL}/my-investments`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
         const investments = response.data.investments || [];
 
         const formattedData = investments.map((item: any) => ({
-  id: item._id,
-  plan: item.planName,
-  date: new Date(item.startDate).toISOString().split("T")[0],
-  amount: item.currentAmount,
-  roi: item.roi,
-  investedAmount: item.investedAmount,
-}));
-
+          id: item._id,
+          plan: item.planName,
+          date: new Date(item.startDate).toISOString().split("T")[0],
+          amount: item.currentAmount,
+          roi: item.roi,
+          investedAmount: item.investedAmount,
+        }));
 
         setPortfolioData(formattedData);
-
       } catch (error) {
         console.error("Failed to fetch portfolio data:", error);
       }
@@ -107,7 +108,8 @@ const Portfolio = () => {
         >
           <img src={ReferAndEarn} alt="Invite & Earn" />
           <span className="text-[10px] text-center text-white leading-tight">
-            Invite &<br />Earn
+            Invite &<br />
+            Earn
           </span>
         </Button>
       </div>
