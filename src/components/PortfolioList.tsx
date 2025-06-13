@@ -94,15 +94,32 @@ const PortfolioList = ({
                   align="end"
                 >
                   <DropdownMenuItem
-                    onClick={() => handleExit(item.id, daysLeft)}
+                    onClick={() => {
+                      if (daysPassed >= 60) {
+                        handleExit(item.id, daysLeft);
+                      } else {
+                        toast.warning(`⏳ You can exit after ${daysLeft} days`);
+                      }
+                    }}
                   >
                     Full Withdrawal
                   </DropdownMenuItem>
+
                   <DropdownMenuItem
-                    onClick={() => navigate("/partial-withdraw")}
-                  >
-                    Partial Withdrawal
-                  </DropdownMenuItem>
+  onClick={() =>
+    navigate("/partial-withdraw", {
+      state: {
+        availableAmount: item.amount - item.investedAmount,
+        planId: item.id,
+        investedAmount: item.investedAmount,
+        currentAmount: item.amount,
+      },
+    })
+  }
+>
+  Partial Withdrawal
+</DropdownMenuItem>
+
                 </DropdownMenuContent>
               </DropdownMenu>
               {/* ) : (

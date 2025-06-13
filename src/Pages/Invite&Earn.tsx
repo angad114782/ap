@@ -17,14 +17,11 @@ const InviteAndEarn = () => {
   const [referredFriends, setReferredFriends] = useState<ReferredFriend[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
+useEffect(() => {
   const fetchReferralInfo = async () => {
     try {
       const token = localStorage.getItem("token");
       const BASE_URL = import.meta.env.VITE_URL;
-
-      console.log("📌 BASE_URL:", BASE_URL);
-      console.log("🔑 Token Found:", !!token);
 
       if (!token) {
         toast.error("Please login again");
@@ -32,18 +29,10 @@ const InviteAndEarn = () => {
         return;
       }
 
-      // ✅ Fetch user profile
-      console.log("📡 Fetching user profile...");
+      // ✅ Step 1: Fetch user profile
       const userRes = await fetch(`${BASE_URL}/me`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
-
-      console.log("📥 userRes status:", userRes.status);
 
       if (userRes.status === 401) {
         localStorage.removeItem("token");
@@ -52,32 +41,26 @@ const InviteAndEarn = () => {
         return;
       }
 
-      if (!userRes.ok) {
-        throw new Error(`User fetch failed with status ${userRes.status}`);
-      }
-
       const userData = await userRes.json();
-      console.log("👤 User Data:", userData);
       setReferralCode(userData.referralCode || "N/A");
 
-      // ✅ Fetch referred users
-      console.log("📡 Fetching referred users...");
-      const referredRes = await fetch(`${BASE_URL}/referrals/me`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      // ✅ Step 2: Fetch referral tree
+      const treeRes = await fetch(`${BASE_URL}/my-referral-tree`, {
+        headers: { Authorization: `Bearer ${token}` },
       });
 
-      console.log("📥 referredRes status:", referredRes.status);
+      if (!treeRes.ok) throw new Error("Referral tree fetch failed");
 
-      if (!referredRes.ok) {
-        throw new Error(`Referral fetch failed: ${referredRes.status}`);
-      }
+      const treeData = await treeRes.json();
 
-      const referredData = await referredRes.json();
-      console.log("🎯 Referred Users Data:", referredData);
-      setReferredFriends(referredData.referred || []);
+      // ✅ Format for display
+      const formatted: ReferredFriend[] = treeData.downline.map((entry: any) => ({
+        mobile: entry.user?.mobile || "N/A",
+        name: entry.user?.name || "N/A",
+        joinedAt: entry.joinedAt || null,
+      }));
+
+      setReferredFriends(formatted);
     } catch (err) {
       console.error("❌ Referral Info Fetch Error:", err);
       toast.error("Failed to load referral info");
@@ -88,6 +71,7 @@ const InviteAndEarn = () => {
 
   fetchReferralInfo();
 }, [navigate]);
+
 
 
   const getCurrentDomain = () => {

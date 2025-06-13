@@ -15,7 +15,10 @@ export type TransactionType =
   | "Paid"
   | "Deposit"
   | "Referral"
-  | "Invest";
+  | "Invest"
+  | "Partial ROI"
+  | "ROI Exit";
+
 
 export interface TransactionData {
   amount: number;
@@ -34,6 +37,8 @@ const tagColors: Record<TransactionType, string> = {
   Deposit: "bg-blue-100 text-blue-700",
   Referral: "bg-purple-100 text-purple-700",
   Invest: "bg-yellow-100 text-yellow-700",
+  "Partial ROI": "bg-green-100 text-green-700",
+  "ROI Exit": "bg-green-100 text-green-700",
 };
 
 const typeBackgrounds: Record<TransactionType, string> = {
@@ -43,6 +48,8 @@ const typeBackgrounds: Record<TransactionType, string> = {
   Deposit: "bg-blue-500",
   Referral: "bg-purple-500",
   Invest: "bg-yellow-500",
+  "Partial ROI": "bg-green-500",
+  "ROI Exit": "bg-green-500",
 };
 
 const typeIcons: Record<TransactionType, React.ReactNode> = {
@@ -52,6 +59,8 @@ const typeIcons: Record<TransactionType, React.ReactNode> = {
   Deposit: <Plus size={20} className="text-white" />,
   Referral: <Users size={20} className="text-white" />,
   Invest: <Landmark size={20} className="text-white" />,
+  "Partial ROI": <ArrowDownLeft size={20} className="text-white" />,
+  "ROI Exit": <ArrowDownLeft size={20} className="text-white" />,
 };
 
 interface TransactionCardProps {

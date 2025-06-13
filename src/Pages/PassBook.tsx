@@ -16,15 +16,22 @@ const Passbook = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   // ✅ Map backend string types to frontend enums
-  const mapType = (rawType: string): TransactionType => {
-    const type = rawType.toLowerCase();
-    if (type.includes("referral")) return "Referral";
-    if (type.includes("deposit")) return "Deposit";
-    if (type.includes("withdraw")) return "Withdrawal";
-    if (type.includes("invest")) return "Invest";
-    if (type.includes("paid")) return "Paid";
-    return "Income";
-  };
+const mapType = (rawType: string): TransactionType => {
+  const type = rawType.toLowerCase();
+
+  if (type.includes("referral")) return "Referral";
+  if (type.includes("deposit")) return "Deposit";
+  if (type.includes("withdrawal")) return "Withdrawal";
+  if (type.includes("invest")) return "Invest";
+  if (type.includes("paid")) return "Paid";
+
+  // ✅ These are incomes (earnings)
+  if (type.includes("partial roi")) return "Partial ROI";
+  if (type.includes("roi withdraw") || type.includes("roi exit")) return "ROI Exit";
+
+  return "Income";
+};
+
 
   const fetchPassbookData = async () => {
     setIsLoading(true);
