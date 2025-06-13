@@ -4,7 +4,6 @@ import UserImage from "@/assets/viratnew.avif";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { renderDashboard } from "@/Pages/admin/Dashboard";
 import { renderDashBoardTabs } from "@/Pages/admin/DashboardTabs";
 import { InvestorsList } from "@/Pages/admin/Investors";
 import Plans from "@/Pages/admin/Plans";
@@ -20,17 +19,18 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useSendCurrency } from "@/hooks/useSendCurrency";
-import { WalletSetting } from "@/Pages/admin/WalletSetting";
+import { renderWalletSetting } from "@/Pages/admin/WalletSetting";
 import { toast } from "sonner";
 
 import { useAuth } from "@/context/AuthContext";
+import axiosInstance from "@/utils/axiosConfig";
+import axios from "axios";
 import {
   ArrowDownLeft,
   ArrowUpDown,
   ArrowUpRight,
   BarChart3,
   Gift,
-  Home,
   Lock,
   LogOut,
   Menu,
@@ -45,8 +45,6 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Input } from "../ui/input";
 import { PasswordChangeDialog } from "./PasswordChange";
 import { ProfileEditDialog } from "./Profile";
-import axios from "axios";
-import axiosInstance from "@/utils/axiosConfig";
 
 const Dashboard = () => {
   const { logout } = useAuth();
@@ -227,7 +225,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   // Get the current tab from URL, remove the '/admin/' prefix and capitalize first letter
   const getCurrentTab = () => {
-    const path = location.pathname.split("/admin/")[1] || "dashboard";
+    const path = location.pathname.split("/admin/")[1] || "walletsetting";
     // Convert known path values to match the exact IDs
     const pathMap: { [key: string]: string } = {
       walletsetting: "WalletSetting",
@@ -245,7 +243,7 @@ const Dashboard = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const sidebarItems = [
-    { icon: Home, label: "Dashboard", id: "Dashboard" },
+    // { icon: Home, label: "Dashboard", id: "Dashboard" },
     { icon: Wallet, label: "Wallet Setting", id: "WalletSetting" },
     { icon: ArrowDownLeft, label: "Deposit", id: "Deposit" },
     { icon: ArrowUpRight, label: "Withdrawals", id: "Withdrawals" },
@@ -274,10 +272,10 @@ const Dashboard = () => {
 
   const renderContent = () => {
     switch (activeTab) {
-      case "Dashboard":
-        return renderDashboard();
+      // case "Dashboard":
+      //   return renderDashboard();
       case "WalletSetting":
-        return <WalletSetting />; // Use as JSX component
+        return renderWalletSetting(); // Use as JSX component
       case "Deposit":
         return renderDashBoardTabs({
           title: "Deposit",
@@ -356,7 +354,11 @@ const Dashboard = () => {
           loading: false,
           onApprove: async (id) => {
             try {
-              await updateWithdrawalStatus(id, "Approved", "Withdrawal approved");
+              await updateWithdrawalStatus(
+                id,
+                "Approved",
+                "Withdrawal approved"
+              );
               toast.success("Withdrawal approved successfully");
               await getReceiveCurrencyData();
             } catch (error: any) {
@@ -473,7 +475,7 @@ const Dashboard = () => {
         );
       default:
         console.log("Current activeTab:", activeTab);
-        return renderDashboard();
+        return renderWalletSetting();
     }
   };
 
