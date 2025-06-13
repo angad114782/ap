@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router();
-const { getMyReferrals, getReferredUsers, getMyReferralTree } = require("../controllers/referralController");
 
 const { verifyToken: auth} = require("../middlewares/authMiddleware");
+const { getMyReferrals, getReferredUsers, getMyReferralTree } = require("../controllers/referralController");
 
 
 router.get("/referrals", auth, getMyReferrals);
