@@ -1,6 +1,12 @@
 // components/PortfolioList.tsx
-import { Button } from "@/components/ui/button";
-import { LogOut } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { EllipsisVerticalIcon, Triangle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 export type PortfolioData = {
@@ -17,39 +23,39 @@ const PortfolioList = ({
 }: {
   portfolioData: PortfolioData[];
 }) => {
+  const navigate = useNavigate();
+  const handleExit = async (id: string, daysLeft: number) => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(
+        `${import.meta.env.VITE_URL}/investments/${id}/withdraw-roi`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      const result = await res.json();
 
-const handleExit = async (id: string) => {
-  try {
-    const token = localStorage.getItem("token");
-    const res = await fetch(
-      `${import.meta.env.VITE_URL}/investments/${id}/withdraw-roi`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      console.log("🚨 Exit Response:", result); // ✅ LOG
+
+      if (
+        res.ok ||
+        result.message?.toLowerCase().includes("investment exited") ||
+        result.message?.toLowerCase().includes("roi credited")
+      ) {
+        toast.success(result.message || "Investment exited successfully");
+        window.location.href = "/main-screen";
+      } else {
+        toast.error(result.message || "Failed to exit investment");
+        toast.warning(`${daysLeft}d left`);
       }
-    );
-    const result = await res.json();
-
-    console.log("🚨 Exit Response:", result); // ✅ LOG
-
-    if (
-      res.ok ||
-      result.message?.toLowerCase().includes("investment exited") ||
-      result.message?.toLowerCase().includes("roi credited")
-    ) {
-      toast.success(result.message || "Investment exited successfully");
-      window.location.href = "/main-screen";
-    } else {
-      toast.error(result.message || "Failed to exit investment");
+    } catch (error) {
+      console.error("❌ Exit API Error:", error);
+      toast.error("Exit failed");
     }
-  } catch (error) {
-    console.error("❌ Exit API Error:", error);
-    toast.error("Exit failed");
-  }
-};
-
+  };
 
   return (
     <div className="space-y-2">
@@ -64,7 +70,7 @@ const handleExit = async (id: string) => {
         return (
           <div
             key={item.id}
-            className="grid grid-cols-6 items-center px-4 py-3 bg-gray-900 rounded-lg"
+            className="grid grid-cols-6 items-center px-4 py-3 bg-gray-900 font-display rounded-lg"
           >
             <div className="text-sm">{item.plan}</div>
             <div className="text-sm text-center">{item.roi}%</div>
@@ -78,19 +84,30 @@ const handleExit = async (id: string) => {
             </div>
 
             <div className="flex justify-end">
-              {daysPassed >= 60 ? (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-red-500 hover:text-red-600 hover:bg-red-100/10"
-                  onClick={() => handleExit(item.id)}
+              {/* {daysPassed >= 60 ? ( */}
+              <DropdownMenu>
+                <DropdownMenuTrigger className="focus:outline-none">
+                  <EllipsisVerticalIcon className="h-4 w-4 mr-1  fill-white" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  className="bg-black text-white outline-none border-none "
+                  align="end"
                 >
-                  <LogOut className="h-4 w-4 mr-1" />
-                  Exit
-                </Button>
-              ) : (
+                  <DropdownMenuItem
+                    onClick={() => handleExit(item.id, daysLeft)}
+                  >
+                    Full Withdrawal
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => navigate("/partial-withdraw")}
+                  >
+                    Partial Withdrawal
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              {/* ) : (
                 <span className="text-xs text-gray-400">{daysLeft}d left</span>
-              )}
+              )} */}
             </div>
           </div>
         );
