@@ -18,6 +18,7 @@ const {
   sendOtpForReset,
   getMyWallet,
   verifyOtpAndResetPassword,
+  getAllUsers,
 } = require("../controllers/authController");
 
 // Auth Routes
@@ -27,7 +28,6 @@ router.post("/set-mpin", setMpin);
 router.post("/forgot-password", forgotPassword);
 router.post("/change-password", auth, changePassword);
 router.put("/update-profile", auth, upload.single("profilePic"), updateProfile);
-const { getAllUsers } = require("../controllers/authController");
 
 // Admin Routes
 router.get("/admin/all-users", auth, isAdmin, getAllUsers);

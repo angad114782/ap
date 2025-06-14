@@ -8,10 +8,9 @@ router.get("/investments", auth, investmentController.getAllInvestors);
 router.get("/all-investments", auth, investmentController.getAllInvestments);
 router.get("/my-investments", auth, investmentController.getMyActiveInvestments);
 
-const { withdrawRoiAndExit,previewCompoundROI,withdrawPartialROI } = require("../controllers/userInvestmentController");
-router.post("/investments/:id/withdraw-roi", auth, withdrawRoiAndExit);
-router.get("/investments/:id/roi-preview", auth, previewCompoundROI);
-router.post("/investments/:id/withdraw-partial", auth, withdrawPartialROI);
+router.post("/investments/:id/withdraw-roi", auth, investmentController.withdrawRoiAndExit);
+router.get("/investments/:id/roi-preview", auth, investmentController.previewCompoundROI);
+router.post("/investments/:id/withdraw-partial", auth, investmentController.withdrawPartialROI);
 
 
 module.exports = router;
