@@ -56,3 +56,33 @@ exports.getReferredUsers = async (req, res) => {
     res.status(500).json({ message: "Server error", error: err.message });
   }
 };
+
+
+exports.getMyReferralTree = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    // Step 1: Find all entries in referral tree where the current user is the root in `path`
+    const downline = await Refertree.find({ path: userId, level: { $lte: 3 } })
+      .populate("userId", "name email mobile referralCode")
+      .populate("parentId", "referralCode") // optional: to trace referral chain
+      .sort({ level: 1 });
+
+    const formatted = downline.map((entry) => ({
+      treeRoot: userId,
+      level: entry.level,
+      joinedAt: entry.joinedAt,
+      user: entry.userId, // includes name, email, mobile, referralCode
+      parentReferralCode: entry.parentId?.referralCode || null,
+    }));
+
+    return res.status(200).json({
+      rootUser: userId,
+      totalDownline: formatted.length,
+      downline: formatted,
+    });
+  } catch (err) {
+    console.error("❌ Referral Tree Fetch Error:", err);
+    return res.status(500).json({ message: "Error fetching referral tree", error: err.message });
+  }
+};

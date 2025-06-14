@@ -2,7 +2,7 @@ const cron = require("node-cron");
 const UserInvestment = require("../models/UserInvestment");
 
 cron.schedule("50 59 23 * * *", async () => {
-  // console.log("📈 Running daily compounding update at 11:59:50 PM");
+  // console.log("📈 Running daily compounding update at 11:59:50 (50 59 23) PM");
 
   try {
     const investments = await UserInvestment.find({ isCompleted: false });

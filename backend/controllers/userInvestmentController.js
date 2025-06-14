@@ -287,3 +287,78 @@ exports.previewCompoundROI = async (req, res) => {
     res.status(500).json({ message: "Error calculating ROI", error: err.message });
   }
 };
+
+
+exports.withdrawPartialROI = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { id } = req.params; // Investment ID
+    const { amount } = req.body;
+
+    if (!amount || amount <= 0) {
+      return res.status(400).json({ message: "Invalid withdrawal amount" });
+    }
+
+    const investment = await UserInvestment.findById(id);
+    if (!investment || investment.userId.toString() !== userId.toString()) {
+      return res.status(404).json({ message: "Investment not found or unauthorized" });
+    }
+
+    const wallet = await VirtualWallet.findOne({ userId });
+    if (!wallet) return res.status(404).json({ message: "Wallet not found" });
+
+    const { amount: principal, earnedTillNow } = investment;
+    const totalAvailable = principal + earnedTillNow;
+
+    if (amount > totalAvailable) {
+      return res.status(400).json({
+        message: `Withdrawable amount exceeded. Max available: ₹${totalAvailable.toFixed(2)}`,
+      });
+    }
+
+    // Step 1: Deduct from earnedTillNow first
+    let roiRemaining = earnedTillNow;
+    let principalRemaining = principal;
+
+    if (amount <= roiRemaining) {
+      roiRemaining -= amount;
+    } else {
+      const diff = amount - roiRemaining;
+      roiRemaining = 0;
+      principalRemaining -= diff;
+    }
+
+    // Update investment with new base
+    investment.earnedTillNow = parseFloat(roiRemaining.toFixed(2));
+    investment.amount = parseFloat(principalRemaining.toFixed(2));
+    await investment.save();
+
+    // Update wallet
+    wallet.balance = parseFloat((wallet.balance + amount).toFixed(2));
+    await wallet.save();
+
+    // Log transaction
+    await WalletTransaction.create({
+      userId,
+      type: "Partial ROI Withdraw",
+      amount,
+      balanceAfter: wallet.balance,
+      description: `Withdrew ₹${amount} from investment ${investment._id}`,
+    });
+
+    return res.status(200).json({
+      message: "Partial ROI withdrawn successfully",
+      withdrawn: amount,
+      remainingPrincipal: investment.amount,
+      remainingROI: investment.earnedTillNow,
+      walletBalance: wallet.balance,
+    });
+
+  } catch (err) {
+    console.error("❌ Partial Withdraw Error:", err);
+    return res.status(500).json({
+      message: "Error withdrawing ROI",
+      error: err.message || "Unknown error",
+    });
+  }
+};
