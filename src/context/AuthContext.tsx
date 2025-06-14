@@ -37,7 +37,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setUserRole(role);
     setProfilePic(profilePic); // Set profile picture if available
     if (role === "admin") {
-      navigate("/admin");
+      navigate("/admin/walletsetting");
     } else {
       navigate("/main-screen");
     }
@@ -126,7 +126,7 @@ export const UserRoute = () => {
   }
 
   if (userRole === "admin") {
-    return <Navigate to="/admin" replace />;
+    return <Navigate to="/admin/walletsetting" replace />;
   }
 
   return <Outlet />;
@@ -159,7 +159,10 @@ export const PublicRoute = () => {
 
   if (isAuthenticated) {
     return (
-      <Navigate to={userRole === "admin" ? "/admin" : "/main-screen"} replace />
+      <Navigate
+        to={userRole === "admin" ? "/admin/walletsetting" : "/main-screen"}
+        replace
+      />
     );
   }
 

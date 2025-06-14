@@ -53,7 +53,7 @@ exports.registerUser = async (req, res) => {
       mobile,
       password: hashedPassword,
       referralCode: newReferralCode,
-      referredBy: referrer?._id || null,  // ✅ FIXED HERE
+      referredBy: referrer?._id || null, // ✅ FIXED HERE
       name,
       email,
       profilePic,
@@ -85,7 +85,6 @@ exports.registerUser = async (req, res) => {
     res.status(500).json({ message: "Server error." });
   }
 };
-
 
 exports.loginUser = async (req, res) => {
   try {
@@ -188,52 +187,50 @@ exports.updateProfile = async (req, res) => {
     if (email) user.email = email;
     if (mobile) user.mobile = mobile;
 
-
-    
     // Handle profile picture upload
-  if (req.file) {
-  try {
-    console.log("🟢 Received file:", req.file);
+    if (req.file) {
+      try {
+        console.log("🟢 Received file:", req.file);
 
-    const outputPath = path.join(
-      __dirname,
-      "../uploads/profile_pic",
-      `resized-${req.file.filename}`
-    );
-    const publicPath = `/uploads/profile_pic/resized-${req.file.filename}`;
+        const outputPath = path.join(
+          __dirname,
+          "../uploads/profile_pic",
+          `resized-${req.file.filename}`
+        );
+        const publicPath = `/uploads/profile_pic/resized-${req.file.filename}`;
 
-    // Ensure original file exists before sharp
-    if (!fs.existsSync(req.file.path)) {
-      console.error("❌ Uploaded file not found:", req.file.path);
-      return res.status(400).json({ message: "Uploaded file is missing" });
+        // Ensure original file exists before sharp
+        if (!fs.existsSync(req.file.path)) {
+          console.error("❌ Uploaded file not found:", req.file.path);
+          return res.status(400).json({ message: "Uploaded file is missing" });
+        }
+
+        // Try resizing
+        await sharp(req.file.path)
+          .resize(300, 300, {
+            fit: "cover",
+            position: "center",
+          })
+          .toFile(outputPath);
+
+        // ⚠️ Windows fix: wait briefly before unlink
+        setTimeout(() => {
+          fs.promises
+            .unlink(req.file.path)
+            .catch((err) =>
+              console.error("File delete failed (delayed):", err)
+            );
+        }, 100);
+
+        user.profilePic = publicPath;
+      } catch (error) {
+        console.error("❌ Image processing error:", error.message);
+        return res.status(500).json({
+          message: "Error processing image",
+          error: error.message,
+        });
+      }
     }
-
-    // Try resizing
-  await sharp(req.file.path)
-  .resize(300, 300, {
-    fit: "cover",
-    position: "center",
-  })
-  .toFile(outputPath);
-
-// ⚠️ Windows fix: wait briefly before unlink
-setTimeout(() => {
-  fs.promises.unlink(req.file.path).catch((err) =>
-    console.error("File delete failed (delayed):", err)
-  );
-}, 100);
-
-
-    user.profilePic = publicPath;
-  } catch (error) {
-    console.error("❌ Image processing error:", error.message);
-    return res.status(500).json({
-      message: "Error processing image",
-      error: error.message,
-    });
-  }
-}
-
 
     await user.save();
 
@@ -328,7 +325,6 @@ exports.getMyWallet = async (req, res) => {
   }
 };
 
-
 exports.forgotPassword = async (req, res) => {
   try {
     const { mobile, newPassword } = req.body;
@@ -351,7 +347,6 @@ exports.forgotPassword = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-
 
 exports.changePassword = async (req, res) => {
   try {
@@ -451,7 +446,6 @@ exports.verifyOtpAndResetPassword = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-
 
 exports.getAllUsers = async (req, res) => {
   try {

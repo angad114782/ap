@@ -244,7 +244,7 @@ export const WalletSetting = () => {
         },
       });
 
-    setWallets(response.data.data); // ✅ Corrected to match API
+      setWallets(response.data.data); // ✅ Corrected to match API
     } catch (error) {
       console.error("Error fetching wallets:", error);
       toast.error("Failed to fetch wallets");
@@ -364,7 +364,9 @@ export const WalletSetting = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                   <div className="space-y-2 p-3 bg-gray-50 rounded-lg">
                     <div className="space-y-1">
-                      <span className="text-sm text-gray-500">Wallet ID Token Type BEP-20</span>
+                      <span className="text-sm text-gray-500">
+                        Wallet ID Token Type BEP-20
+                      </span>
                       <div className="flex items-center gap-2 bg-white p-2 rounded border border-gray-100">
                         <span className="text-sm font-medium truncate">
                           {wallet.walletAddress}
@@ -432,4 +434,8 @@ export const WalletSetting = () => {
       )}
     </div>
   );
+};
+
+export const renderWalletSetting = () => {
+  return <WalletSetting />;
 };

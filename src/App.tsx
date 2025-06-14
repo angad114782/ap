@@ -33,8 +33,12 @@ import InvestmentPlanFinal from "./Pages/InvestmentPlanFinal";
 import EnterOtp from "./Pages/EnterOtp";
 import ForgetPassword from "./Pages/ForgetPassword";
 import PDFViewer from "./Pages/PDFViewer";
-import { AdminRoute, UserRoute } from "./components/ProtectedRoutes";
-import { AuthProvider, PublicRoute } from "./context/AuthContext";
+import {
+  AdminRoute,
+  AuthProvider,
+  PublicRoute,
+  UserRoute,
+} from "./context/AuthContext";
 import PartialWithdraw from "./Pages/PartialWithdraw";
 
 const App = () => {
