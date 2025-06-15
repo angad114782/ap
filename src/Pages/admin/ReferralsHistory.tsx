@@ -42,7 +42,7 @@ export const renderReferralsHistory = () => (
     </div>
 
     {/* Stats Grid - 2 columns on mobile, 4 on desktop */}
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+    {/* <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
       <Card>
         <CardContent className="p-4">
           <div className="text-lg sm:text-2xl font-bold text-purple-600">
@@ -77,7 +77,7 @@ export const renderReferralsHistory = () => (
           </div>
         </CardContent>
       </Card>
-    </div>
+    </div> */}
 
     {/* Referral Activity Card */}
     <Card>
@@ -113,6 +113,34 @@ export const renderReferralsHistory = () => (
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-6 w-full sm:w-auto sm:ml-auto">
                 {/* Commission Info */}
                 <div className="text-left sm:text-right w-full sm:w-auto">
+                  <div className="font-semibold">ReferCode Data</div>
+                  <div className="text-xs sm:text-sm text-gray-500">
+                    Refer Code
+                  </div>
+                </div>
+                <div className="text-left sm:text-right w-full sm:w-auto">
+                  <div className="font-semibold">TotalInvest Data</div>
+                  <div className="text-xs sm:text-sm text-gray-500">
+                    Total Invest
+                  </div>
+                </div>
+                <div className="text-left sm:text-right w-full sm:w-auto">
+                  <div className="font-semibold">TotalCommission Data</div>
+                  <div className="text-xs sm:text-sm text-gray-500">
+                    Total Commission Bonus
+                  </div>
+                </div>
+                <div className="text-left sm:text-right w-full sm:w-auto">
+                  <div className="font-semibold">Upline Data</div>
+                  <div className="text-xs sm:text-sm text-gray-500">Upline</div>
+                </div>
+                <div className="text-left sm:text-right w-full sm:w-auto">
+                  <div className="font-semibold">Downline Data</div>
+                  <div className="text-xs sm:text-sm text-gray-500">
+                    Downline
+                  </div>
+                </div>
+                <div className="text-left sm:text-right w-full sm:w-auto">
                   <div className="font-semibold">$125.50</div>
                   <div className="text-xs sm:text-sm text-gray-500">
                     Commission
@@ -127,9 +155,9 @@ export const renderReferralsHistory = () => (
                 </div>
 
                 {/* Status Badge */}
-                <Badge variant="default" className="w-fit">
+                {/* <Badge variant="default" className="w-fit">
                   Paid
-                </Badge>
+                </Badge> */}
               </div>
             </div>
           ))}

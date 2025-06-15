@@ -159,7 +159,9 @@ const MobileCard = ({
       <div className="space-y-2 mb-4">
         <div className="flex items-center justify-between py-2 border-b border-gray-100">
           <span className="text-xs font-medium text-gray-500">
-            {title === "Withdrawals"
+            {title === "Deposit"
+              ? "Wallet"
+              : title === "Withdrawals"
               ? "Wallet"
               : title === "Transaction"
               ? "WalletId"
@@ -348,7 +350,7 @@ const DepositComponent = ({
                   <TableCaption>A list of your {title}.</TableCaption>
                   <TableHeader className="bg-gray-100 font-bold">
                     <TableRow className="font-extrabold">
-                      <TableHead>Type</TableHead>
+                      {title === "Deposit" ? null : <TableHead>Type</TableHead>}
                       <TableHead>
                         {title === "Withdrawals"
                           ? "Wallet"
@@ -381,7 +383,13 @@ const DepositComponent = ({
                         <TableCell className="font-medium">
                           <ArrowDownRight className="inline h-8 w-8 rounded-full bg-green-500 text-white p-2" />
                         </TableCell>
-                        <TableCell>{dataColumns.plan}</TableCell>
+                        <TableCell
+                          className={`${
+                            title === "Deposit" ? "hidden" : "block"
+                          }`}
+                        >
+                          {dataColumns.plan}
+                        </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
                             <Avatar className="h-8 w-8">
