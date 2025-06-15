@@ -8,7 +8,7 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { Wallet, Check } from "lucide-react";
+import { Wallet, Check, Delete, Trash2Icon } from "lucide-react";
 import { toast } from "sonner";
 
 import Binance from "../assets/binance.svg";
@@ -16,6 +16,7 @@ import MetaMask from "../assets/fox.svg";
 import CoinBase from "../assets/Coinbase.svg";
 import TrustWallet from "../assets/TrustWallet.svg";
 import SendDollar from "../assets/Send Dollar.svg";
+import { Button } from "./ui/button";
 
 // ✅ Updated interface to match backend
 interface WalletData {
@@ -52,15 +53,14 @@ export const MyWalletsManagement = () => {
       });
 
       const walletsArray = response.data?.data;
-if (!Array.isArray(walletsArray)) {
-  toast.error("Invalid wallet response");
-  return;
-}
+      if (!Array.isArray(walletsArray)) {
+        toast.error("Invalid wallet response");
+        return;
+      }
 
-const formattedWallets = walletsArray.map((wallet: any) => ({
-
+      const formattedWallets = walletsArray.map((wallet: any) => ({
         id: wallet._id,
-        walletName: wallet.walletType || "unknown", 
+        walletName: wallet.walletType || "unknown",
         walletAddress: wallet.walletID,
         isActive: wallet.isActive,
         qrCodeUrl: wallet.qrCodeUrl,
@@ -127,29 +127,39 @@ const formattedWallets = walletsArray.map((wallet: any) => ({
     }
   };
 
-const getWalletIcon = (name: string | undefined) => {
-  const safeName = name?.toLowerCase?.() || "";
-  switch (safeName) {
-    case "binance":
-      return Binance;
-    case "metamask":
-      return MetaMask;
-    case "coinbase":
-      return CoinBase;
-    case "trustwallet":
-      return TrustWallet;
-    default:
-      return TrustWallet;
-  }
-};
+  const handleDeleteWallet = (e: React.MouseEvent, walletId: string) => {
+    e.stopPropagation(); // Prevent wallet selection when clicking delete
+    // Add your delete functionality here
+    console.log("Delete wallet:", walletId);
+    toast.success("Wallet deleted successfully");
+  };
 
+  const getWalletIcon = (name: string | undefined) => {
+    const safeName = name?.toLowerCase?.() || "";
+    switch (safeName) {
+      case "binance":
+        return Binance;
+      case "metamask":
+        return MetaMask;
+      case "coinbase":
+        return CoinBase;
+      case "trustwallet":
+        return TrustWallet;
+      default:
+        return TrustWallet;
+    }
+  };
 
   return (
     <Drawer open={openDrawer} onOpenChange={setOpenDrawer}>
       <DrawerTrigger asChild>
         <div className="flex items-center justify-center gap-3 cursor-pointer">
           <button>
-            <img src={SendDollar} alt="Send" className="h-7 w-7 sm:h-8 sm:w-8" />
+            <img
+              src={SendDollar}
+              alt="Send"
+              className="h-7 w-7 sm:h-8 sm:w-8"
+            />
             <span className="text-xs sm:text-sm">Wallet</span>
           </button>
         </div>
@@ -229,6 +239,13 @@ const getWalletIcon = (name: string | undefined) => {
                         {wallet.walletAddress}
                       </p>
                     </div>
+
+                    <Button
+                      className="cursor-pointer"
+                      onClick={(e) => handleDeleteWallet(e, wallet.id)}
+                    >
+                      <Trash2Icon className="text-red-600" />
+                    </Button>
 
                     <div className="flex-shrink-0">
                       <div
