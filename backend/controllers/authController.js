@@ -5,6 +5,8 @@ const jwt = require("jsonwebtoken");
 const sharp = require("sharp");
 const fs = require("fs");
 const path = require("path");
+const nodemailer = require("nodemailer");
+const crypto = require("crypto");
 
 // Generate new referral code based on mobile
 const generateReferralCode = (mobile) => {
@@ -327,125 +329,127 @@ exports.getMyWallet = async (req, res) => {
 
 exports.forgotPassword = async (req, res) => {
   try {
-    const { mobile, newPassword } = req.body;
+    const { email } = req.body;
 
-    if (!mobile || !newPassword) {
-      return res
-        .status(400)
-        .json({ message: "Mobile and new password required" });
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
     }
 
-    const user = await User.findOne({ mobile });
+    const user = await User.findOne({ email });
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    user.password = await bcrypt.hash(newPassword, 10);
+    // Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // Set OTP & expiry (15 min)
+    user.resetOTP = otp;
+    user.resetOTPExpiry = Date.now() + 15 * 60 * 1000;
     await user.save();
 
-    res.status(200).json({ message: "Password reset successfully" });
+    // Send OTP via email using Nodemailer
+const transporter = nodemailer.createTransport({
+  host: "smtp.hostinger.com", // typically: mail.yourdomain.com
+  port: 465,                // 465 for SSL, or 587 for TLS
+  secure: true,             // true for 465, false for 587
+  auth: {
+    user: process.env.SMTP_EMAIL,    // e.g., support@apart-x.pro
+    pass: process.env.SMTP_PASSWORD, // your email password (or app password if enabled)
+  },
+});
+
+
+    await transporter.sendMail({
+      from: `"Apart-X" <${process.env.SMTP_EMAIL}>`,
+      to: email,
+      subject: "Reset Your Password - Apart-X",
+      html: `<p>Your OTP to reset password is:</p>
+             <h2>${otp}</h2>
+             <p>This OTP is valid for 15 minutes. Please do not share it with anyone.</p>`,
+    });
+
+    return res.status(200).json({ message: "OTP sent to your email" });
   } catch (err) {
     console.error("Forgot Password Error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
 
-exports.changePassword = async (req, res) => {
+exports.resetPassword = async (req, res) => {
   try {
-    const { oldPassword, newPassword } = req.body;
+    const { email, oldPassword, newPassword } = req.body;
 
-    const user = await User.findById(req.user._id);
-    if (!user) return res.status(404).json({ message: "User not found" });
+    // Case 1: Logged-in user wants to change password using oldPassword
+    if (req.user && oldPassword) {
+      const user = await User.findById(req.user._id);
+      if (!user) return res.status(404).json({ message: "User not found" });
 
-    const isMatch = await bcrypt.compare(oldPassword, user.password);
-    if (!isMatch)
-      return res.status(401).json({ message: "Old password is incorrect" });
+      const isMatch = await bcrypt.compare(oldPassword, user.password);
+      if (!isMatch) {
+        return res.status(401).json({ message: "Old password is incorrect" });
+      }
 
-    user.password = await bcrypt.hash(newPassword, 10);
-    await user.save();
-
-    res.status(200).json({ message: "Password changed successfully" });
-  } catch (err) {
-    console.error("Change Password Error:", err);
-    res.status(500).json({ message: "Something went wrong" });
-  }
-};
-
-const nodemailer = require("nodemailer");
-const { profile } = require("console");
-
-exports.sendOtpForReset = async (req, res) => {
-  try {
-    const { mobile } = req.body;
-
-    const user = await User.findOne({ mobile });
-    if (!user) return res.status(404).json({ message: "User not found" });
-
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiry = new Date(Date.now() + 10 * 60 * 1000); // 10 min
-
-    user.otpCode = otp;
-    user.otpExpiry = expiry;
-    console.log("OTP Mail:", otp);
-    await user.save();
-
-    // ✅ SMTP Webmail Configuration
-    const transporter = nodemailer.createTransport({
-      host: "mail.hostinger.com", // replace with your mail server (e.g., smtp.zoho.com)
-      port: 587, // or 465 if using SSL
-      secure: false, // true if port 465
-      auth: {
-        user: "ankit@angadyadav.in", // your webmail email
-        pass: "1y0XWO$y]S", // your webmail password
-      },
-    });
-
-    await transporter.sendMail({
-      from: '"Forget Password" <noreply@angadyadav.in>',
-      to: user.email,
-      subject: "Your OTP for Password Reset",
-      html: `<p>Hello ${user.name || "User"},</p>
-             <p>Your OTP is <b>${otp}</b>. It is valid for 10 minutes.</p>
-             <p>If you did not request this, please ignore this email.</p>`,
-    });
-
-    return res
-      .status(200)
-      .json({ message: "OTP sent to your registered email." });
-  } catch (err) {
-    console.error("OTP Mail Error:", err);
-    res.status(500).json({ message: "Failed to send OTP email" });
-  }
-};
-
-exports.verifyOtpAndResetPassword = async (req, res) => {
-  try {
-    const { mobile, otp, newPassword } = req.body;
-
-    if (!mobile || !otp || !newPassword) {
-      return res.status(400).json({ message: "All fields required" });
+      user.password = await bcrypt.hash(newPassword, 10);
+      await user.save();
+      return res.status(200).json({ message: "Password updated successfully" });
     }
 
-    const user = await User.findOne({ mobile });
+    // Case 2: Reset via OTP (email provided but not logged in)
+    if (email && newPassword) {
+      const user = await User.findOne({ email });
+      if (!user) return res.status(404).json({ message: "User not found" });
+
+      // Optional: You may check if OTP was verified recently
+      // If OTP system clears OTP after verification, skip this check
+
+      user.password = await bcrypt.hash(newPassword, 10);
+      await user.save();
+      return res.status(200).json({ message: "Password reset successfully" });
+    }
+
+    return res.status(400).json({ message: "Invalid request format" });
+  } catch (err) {
+    console.error("Reset Password Error:", err);
+    return res.status(500).json({ message: "Something went wrong" });
+  }
+};
+
+
+
+
+
+exports.verifyOtp = async (req, res) => {
+  try {
+    const { email, otp, type } = req.body;
+
+    if (!email || !otp) {
+      return res.status(400).json({ message: "Email and OTP are required" });
+    }
+
+    const user = await User.findOne({ email });
     if (!user) return res.status(404).json({ message: "User not found" });
 
     if (
-      !user.otpCode ||
-      user.otpCode !== otp ||
-      new Date(user.otpExpiry) < new Date()
+      !user.resetOTP ||
+      user.resetOTP !== otp ||
+      new Date(user.resetOTPExpiry) < new Date()
     ) {
       return res.status(400).json({ message: "Invalid or expired OTP" });
     }
 
-    user.password = await bcrypt.hash(newPassword, 10);
-    user.otpCode = null;
-    user.otpExpiry = null;
+    // Clear OTP after successful verification
+    user.resetOTP = null;
+    user.resetOTPExpiry = null;
     await user.save();
 
-    res.status(200).json({ message: "Password reset successfully" });
+    console.log(`✅ OTP verified for ${email} [Type: ${type}]`);
+
+    return res.status(200).json({ message: "OTP verified successfully" });
   } catch (err) {
-    console.error("Reset Password Error:", err);
-    res.status(500).json({ message: "Server error" });
+    console.error("OTP Verification Error:", err);
+    return res.status(500).json({ message: "Server error" });
   }
 };
+
 
 exports.getAllUsers = async (req, res) => {
   try {

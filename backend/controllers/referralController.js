@@ -117,3 +117,31 @@ exports.getMyReferralTree = async (req, res) => {
     return res.status(500).json({ message: "Error fetching referral tree", error: err.message });
   }
 };
+
+
+exports.getAllReferralHistory = async (req, res) => {
+  try {
+    const allUsers = await User.find().select("_id name email mobile profilePic");
+
+    const allHistories = await Promise.all(
+      allUsers.map(async (user) => {
+        const treeEntry = await Refertree.findOne({ userId: user._id }); // ✅ correct model name
+        const bonusLogs = await ReferralEarningLog.find({ fromUser: user._id });
+
+        const bonusEarned = bonusLogs.reduce((sum, log) => sum + (log.amount || 0), 0);
+
+        return {
+          user,
+          joinedAt: treeEntry?.joinedAt || null,
+          bonusEarned,
+        };
+      })
+    );
+
+    return res.status(200).json({ downline: allHistories });
+
+  } catch (err) {
+    console.error("❌ Error in admin referral history:", err);
+    return res.status(500).json({ message: "Server error", error: err.message });
+  }
+};

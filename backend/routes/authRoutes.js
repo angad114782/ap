@@ -12,12 +12,11 @@ const {
   setMpin,
   updateProfile,
   forgotPassword,
-  changePassword, // ✅ this must be here
+  resetPassword, // ✅ this must be here
   getInvestorCount,
   getAllUserWallets,
-  sendOtpForReset,
   getMyWallet,
-  verifyOtpAndResetPassword,
+  verifyOtp,
   getAllUsers,
   getMe ,
 } = require("../controllers/authController");
@@ -27,7 +26,9 @@ router.post("/register", registerUser);
 router.post("/login", loginUser);
 router.post("/set-mpin", setMpin);
 router.post("/forgot-password", forgotPassword);
-router.post("/change-password", auth, changePassword);
+router.post("/verify-otp", verifyOtp);
+router.post("/reset-password", resetPassword);           
+router.post("/change-password", auth, resetPassword); 
 router.put("/update-profile", auth, upload.single("profilePic"), updateProfile);
 
 // Admin Routes
@@ -36,8 +37,6 @@ router.get("/admin/investors-count", auth, isAdmin, getInvestorCount);
 router.get("/my-wallet", auth, getMyWallet);
 router.get("/admin/wallets", auth, isAdmin, getAllUserWallets);
 router.get("/myprofile", auth, getMe);
-router.post("/send-otp", auth, sendOtpForReset);
-router.post("/reset-password", auth, verifyOtpAndResetPassword);
 
 router.get("/me", auth, (req, res) => {
   res.json(req.user);

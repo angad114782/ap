@@ -180,7 +180,7 @@ const formatted: ReferredFriend[] = treeData.downline.map((entry: any) => ({
                   })
                 : "—"}
             </td>
-            <td className="px-4 py-2 whitespace-nowrap">₹{friend.bonusEarned.toFixed(2)}</td>
+            <td className="px-4 py-2 whitespace-nowrap">${friend.bonusEarned.toFixed(2)}</td>
           </tr>
         ))
       ) : (

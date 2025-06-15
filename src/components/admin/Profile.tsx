@@ -8,9 +8,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Camera } from "lucide-react";
-import React, { useState, useRef } from "react";
-import virat from "@/assets/viratnew.avif"; // Adjust the path as necessary
+import React, { useState, useRef, useEffect } from "react";
 import { DialogTitle } from "@radix-ui/react-dialog";
+import { toast } from "sonner";
 
 export const ProfileEditDialog = ({
   isOpen,
@@ -20,13 +20,42 @@ export const ProfileEditDialog = ({
   onClose: () => void;
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [selectedImage, setSelectedImage] = useState<string>(virat);
+  const [selectedImage, setSelectedImage] = useState<string>("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [formData, setFormData] = useState({
     fullName: "",
-    gender: "",
     contactNo: "",
     email: "",
   });
+
+  // ✅ Fetch profile data on mount
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await fetch(`${import.meta.env.VITE_URL}/me`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const data = await response.json();
+        setFormData({
+          fullName: data.name || "",
+          contactNo: data.mobile || "",
+          email: data.email || "",
+        });
+        if (data.profilePic) {
+          const baseUrl = import.meta.env.VITE_URL.split("/api")[0];
+          setSelectedImage(`${baseUrl}${data.profilePic}`);
+        }
+      } catch (err) {
+        console.error("Failed to fetch profile", err);
+        toast.error("Unable to load profile");
+      }
+    };
+
+    if (isOpen) fetchProfile();
+  }, [isOpen]);
 
   const handleImageClick = () => {
     fileInputRef.current?.click();
@@ -35,6 +64,7 @@ export const ProfileEditDialog = ({
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      setImageFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         setSelectedImage(reader.result as string);
@@ -43,28 +73,44 @@ export const ProfileEditDialog = ({
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Include the selected image in your form data
-    const submitData = {
-      ...formData,
-      profileImage: selectedImage,
-    };
-    // Handle profile update logic here
-    console.log("Form data with image:", submitData);
-    onClose();
+
+    const token = localStorage.getItem("token");
+    const updateForm = new FormData();
+    updateForm.append("name", formData.fullName);
+    updateForm.append("email", formData.email);
+    updateForm.append("mobile", formData.contactNo);
+    if (imageFile) {
+      updateForm.append("profilePic", imageFile);
+    }
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_URL}/update-profile`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: updateForm,
+      });
+
+      if (!response.ok) throw new Error("Update failed");
+      toast.success("Profile updated successfully");
+      onClose();
+    } catch (err) {
+      console.error("Update Error", err);
+      toast.error("Failed to update profile");
+    }
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[525px] p-0 overflow-hidden">
-        <DialogTitle className="hidden"></DialogTitle>
-        <DialogDescription className="hidden"></DialogDescription>
-        {/* Header with gradient */}
+        <DialogTitle className="hidden" />
+        <DialogDescription className="hidden" />
         <div className="h-24 bg-gradient-to-r from-blue-400 to-blue-300" />
 
         <div className="px-6">
-          {/* Hidden file input */}
           <input
             type="file"
             ref={fileInputRef}
@@ -73,13 +119,12 @@ export const ProfileEditDialog = ({
             onChange={handleImageChange}
           />
 
-          {/* Profile Image Section */}
           <div className="flex items-center justify-between -mt-10 mb-6">
             <div className="flex items-center space-x-4">
               <div className="relative">
                 <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-lg bg-gray-100">
                   <img
-                    src={selectedImage}
+                    src={selectedImage || ""}
                     alt="Profile"
                     className="w-full h-full object-cover"
                   />
@@ -95,13 +140,14 @@ export const ProfileEditDialog = ({
                 </div>
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-gray-800">William</h2>
+                <h2 className="text-2xl font-bold text-gray-800">
+                  {formData.fullName || "Admin"}
+                </h2>
                 <p className="text-gray-600">Admin</p>
               </div>
             </div>
           </div>
 
-          {/* Form Fields */}
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-4">
               <div>
@@ -118,22 +164,7 @@ export const ProfileEditDialog = ({
               </div>
 
               <div>
-                <Label className="text-gray-800 font-medium">Gender</Label>
-                <Input
-                  name="gender"
-                  value={formData.gender}
-                  onChange={(e) =>
-                    setFormData({ ...formData, gender: e.target.value })
-                  }
-                  placeholder="Your Gender"
-                  className="mt-2 bg-gray-100 border-0 focus:bg-white"
-                />
-              </div>
-
-              <div>
-                <Label className="text-gray-800 font-medium">
-                  Contact Number
-                </Label>
+                <Label className="text-gray-800 font-medium">Contact Number</Label>
                 <Input
                   name="contactNo"
                   value={formData.contactNo}
@@ -146,9 +177,7 @@ export const ProfileEditDialog = ({
               </div>
 
               <div>
-                <Label className="text-gray-800 font-medium">
-                  Email Address
-                </Label>
+                <Label className="text-gray-800 font-medium">Email Address</Label>
                 <Input
                   name="email"
                   type="email"

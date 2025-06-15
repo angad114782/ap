@@ -31,8 +31,9 @@ const userSchema = new mongoose.Schema({
   required: true, // ✅ force email to be required
   unique: true,
 },
-  otpCode: { type: String },
-otpExpiry: { type: Date },
+resetOTP: { type: String },
+resetOTPExpiry: { type: Date },
+
   profilePic: String,
   role: {
     type: String,
