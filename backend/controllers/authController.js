@@ -464,3 +464,33 @@ exports.getAllUsers = async (req, res) => {
     res.status(500).json({ message: "Server error", error: err.message });
   }
 };
+
+exports.getMe = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id)
+      .populate("referredBy", "name mobile email"); // Brings upliner data
+
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    res.status(200).json({
+      name: user.name,
+      email: user.email,
+      mobile: user.mobile,
+      referralCode: user.referralCode,
+      createdAt: user.createdAt,
+      profilePic: user.profilePic,
+      referredBy: user.referredBy
+        ? {
+            name: user.referredBy.name,
+            mobile: user.referredBy.mobile,
+            email: user.referredBy.email,
+          }
+        : null,
+    });
+  } catch (err) {
+    console.error("GetMe Error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+

@@ -117,7 +117,7 @@ const PortfolioList = ({
     })
   }
 >
-  Partial Withdrawal
+  Roi Withdrawal
 </DropdownMenuItem>
 
                 </DropdownMenuContent>

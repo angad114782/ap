@@ -19,6 +19,7 @@ const {
   getMyWallet,
   verifyOtpAndResetPassword,
   getAllUsers,
+  getMe ,
 } = require("../controllers/authController");
 
 // Auth Routes
@@ -34,6 +35,7 @@ router.get("/admin/all-users", auth, isAdmin, getAllUsers);
 router.get("/admin/investors-count", auth, isAdmin, getInvestorCount);
 router.get("/my-wallet", auth, getMyWallet);
 router.get("/admin/wallets", auth, isAdmin, getAllUserWallets);
+router.get("/myprofile", auth, getMe);
 router.post("/send-otp", auth, sendOtpForReset);
 router.post("/reset-password", auth, verifyOtpAndResetPassword);
 

@@ -4,7 +4,7 @@ const walletTransactionSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   type: {
     type: String,
-    enum: ["Deposit", "Withdrawal", "Referral", "Income", "Paid", "Invest","ROI Withdraw & Exit", "Partial ROI Withdraw"
+    enum: ["Deposit", "Withdrawal", "Referral Bonus", "Income", "Paid", "Invest","ROI Withdraw & Exit", "Partial ROI Withdraw"
     ],
     required: true,
   },

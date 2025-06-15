@@ -9,7 +9,11 @@ type ReferredFriend = {
   mobile: string;
   name: string;
   joinedAt: string | null;
+  bonusEarned: number;
+  parentName: string;
 };
+
+
 
 const InviteAndEarn = () => {
   const navigate = useNavigate();
@@ -53,12 +57,20 @@ useEffect(() => {
 
       const treeData = await treeRes.json();
 
-      // ✅ Format for display
-      const formatted: ReferredFriend[] = treeData.downline.map((entry: any) => ({
-        mobile: entry.user?.mobile || "N/A",
-        name: entry.user?.name || "N/A",
-        joinedAt: entry.joinedAt || null,
-      }));
+const formatted: ReferredFriend[] = treeData.downline.map((entry: any) => ({
+  mobile: entry.user?.mobile || "N/A",
+  name:
+    entry.user?.name?.trim() ||
+    entry.user?.email?.trim() ||
+    entry.user?.mobile ||
+    "N/A",
+  joinedAt: entry.joinedAt || null,
+  bonusEarned: entry.bonusEarned || 0,
+  parentName: entry.parentReferralCode || "N/A", // fallback if full name not coming
+}));
+
+
+
 
       setReferredFriends(formatted);
     } catch (err) {
@@ -137,38 +149,51 @@ useEffect(() => {
       {/* Referred Friends Table */}
       <div className="flex-1 overflow-y-auto mt-4 mb-4 px-4">
         <div className="text-sm mb-2">Referred Friends</div>
-        <div className="rounded-md overflow-hidden">
-          <div className="grid grid-cols-3 text-center bg-[#3d3b3b] py-2 text-xs font-bold">
-            <div>Mobile Number</div>
-            <div>Profile Name</div>
-            <div>Date Joined</div>
-          </div>
-          {referredFriends.length > 0 ? (
-            referredFriends.map((friend, idx) => (
-              <div
-                key={idx}
-                className={`grid grid-cols-3 text-center py-2 text-sm border-t border-gray-700 ${
-                  idx % 2 === 0 ? "bg-[#4c4343]" : "bg-[#716666]"
-                }`}
-              >
-                <div>{friend.mobile}</div>
-                <div>{friend.name || "N/A"}</div>
-                <div>
-                  {friend.joinedAt
-                    ? new Date(friend.joinedAt).toLocaleDateString("en-IN", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                      })
-                    : "—"}
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className="text-center py-4 text-sm text-gray-400">
-              No referrals yet.
-            </div>
-          )}
+        <div className="rounded-md overflow-auto max-w-full">
+          <div className="overflow-auto rounded-md max-w-full">
+  <table className="min-w-[800px] table-auto border border-gray-700 text-sm text-white w-full">
+    <thead className="bg-[#3d3b3b] font-bold text-xs">
+      <tr>
+        <th className="px-4 py-2 text-left whitespace-nowrap border-b border-gray-700">Mobile Number</th>
+        <th className="px-4 py-2 text-left whitespace-nowrap border-b border-gray-700">Profile Name</th>
+        <th className="px-4 py-2 text-left whitespace-nowrap border-b border-gray-700">Downliner</th>
+        <th className="px-4 py-2 text-left whitespace-nowrap border-b border-gray-700">Date Joined</th>
+        <th className="px-4 py-2 text-left whitespace-nowrap border-b border-gray-700">Bonus Earned</th>
+      </tr>
+    </thead>
+    <tbody>
+      {referredFriends.length > 0 ? (
+        referredFriends.map((friend, idx) => (
+          <tr
+            key={idx}
+            className={idx % 2 === 0 ? "bg-[#4c4343]" : "bg-[#716666]"}
+          >
+            <td className="px-4 py-2 whitespace-nowrap">{friend.mobile}</td>
+            <td className="px-4 py-2 whitespace-nowrap">{friend.name}</td>
+            <td className="px-4 py-2 whitespace-nowrap">{friend.parentName}</td>
+            <td className="px-4 py-2 whitespace-nowrap">
+              {friend.joinedAt
+                ? new Date(friend.joinedAt).toLocaleDateString("en-IN", {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                  })
+                : "—"}
+            </td>
+            <td className="px-4 py-2 whitespace-nowrap">₹{friend.bonusEarned.toFixed(2)}</td>
+          </tr>
+        ))
+      ) : (
+        <tr>
+          <td colSpan={5} className="text-center py-4 text-gray-400">
+            No referrals yet.
+          </td>
+        </tr>
+      )}
+    </tbody>
+  </table>
+</div>
+
         </div>
       </div>
     </div>
