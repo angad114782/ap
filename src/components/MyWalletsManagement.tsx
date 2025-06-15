@@ -8,7 +8,7 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { Wallet, Check, Delete, Trash2Icon } from "lucide-react";
+import { Wallet, Check, Trash2Icon } from "lucide-react";
 import { toast } from "sonner";
 
 import Binance from "../assets/binance.svg";
