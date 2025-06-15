@@ -1,5 +1,6 @@
 const Refertree = require("../models/ReferralTree");
 const User = require("../models/User");
+const ReferralEarningLog = require("../models/ReferralEarningLog");
 
 exports.getMyReferrals = async (req, res) => {
   try {
@@ -61,28 +62,86 @@ exports.getReferredUsers = async (req, res) => {
 exports.getMyReferralTree = async (req, res) => {
   try {
     const userId = req.user._id;
+    const maxDepth = 3;
 
-    // Step 1: Find all entries in referral tree where the current user is the root in `path`
-    const downline = await Refertree.find({ path: userId, level: { $lte: 3 } })
-      .populate("userId", "name email mobile referralCode")
-      .populate("parentId", "referralCode") // optional: to trace referral chain
-      .sort({ level: 1 });
+    let currentLevel = 0;
+    let queue = [userId]; // start with root
+    let visited = new Set(); // prevent loops
+    const downlineUsers = [];
 
-    const formatted = downline.map((entry) => ({
-      treeRoot: userId,
-      level: entry.level,
-      joinedAt: entry.joinedAt,
-      user: entry.userId, // includes name, email, mobile, referralCode
-      parentReferralCode: entry.parentId?.referralCode || null,
-    }));
+    while (queue.length > 0 && currentLevel < maxDepth) {
+      const nextQueue = [];
+
+      for (const parentId of queue) {
+        const children = await Refertree.find({ parentId })
+          .populate("userId", "name email mobile referralCode")
+          .populate("parentId", "referralCode")
+          .lean();
+
+        for (const child of children) {
+          const downlineUserId = child.userId?._id?.toString();
+          if (!downlineUserId || visited.has(downlineUserId)) continue;
+
+          // ✅ Check if you (userId) earned referral bonus from this child
+          const bonusLog = await ReferralEarningLog.findOne({
+            earnedBy: userId,
+            fromUser: downlineUserId,
+            reason: "Investment Referral",
+          });
+
+          downlineUsers.push({
+            level: currentLevel + 1,
+            user: child.userId,
+            joinedAt: child.joinedAt,
+            parentReferralCode: child.parentId?.referralCode || null,
+            bonusEarned: bonusLog?.amount || 0, // 💰 Bonus added
+          });
+
+          nextQueue.push(downlineUserId);
+          visited.add(downlineUserId);
+        }
+      }
+
+      queue = nextQueue;
+      currentLevel++;
+    }
 
     return res.status(200).json({
       rootUser: userId,
-      totalDownline: formatted.length,
-      downline: formatted,
+      totalDownline: downlineUsers.length,
+      downline: downlineUsers,
     });
+
   } catch (err) {
     console.error("❌ Referral Tree Fetch Error:", err);
     return res.status(500).json({ message: "Error fetching referral tree", error: err.message });
+  }
+};
+
+
+exports.getAllReferralHistory = async (req, res) => {
+  try {
+    const allUsers = await User.find().select("_id name email mobile profilePic");
+
+    const allHistories = await Promise.all(
+      allUsers.map(async (user) => {
+        const treeEntry = await Refertree.findOne({ userId: user._id }); // ✅ correct model name
+        const bonusLogs = await ReferralEarningLog.find({ fromUser: user._id });
+
+        const bonusEarned = bonusLogs.reduce((sum, log) => sum + (log.amount || 0), 0);
+
+        return {
+          user,
+          joinedAt: treeEntry?.joinedAt || null,
+          bonusEarned,
+        };
+      })
+    );
+
+    return res.status(200).json({ downline: allHistories });
+
+  } catch (err) {
+    console.error("❌ Error in admin referral history:", err);
+    return res.status(500).json({ message: "Server error", error: err.message });
   }
 };

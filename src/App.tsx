@@ -40,6 +40,7 @@ import {
   UserRoute,
 } from "./context/AuthContext";
 import PartialWithdraw from "./Pages/PartialWithdraw";
+import SetNewPassword from "./Pages/SetNewPassword";
 
 const App = () => {
   return (
@@ -144,6 +145,14 @@ const App = () => {
               }
             />
           </Route>
+            <Route
+              path="/set-password"
+              element={
+                <MobileLayout>
+                  <SetNewPassword />
+                </MobileLayout>
+              }
+            />
 
           {/* Protected User Routes */}
           <Route element={<UserRoute />}>

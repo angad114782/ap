@@ -7,7 +7,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { renderDashBoardTabs } from "@/Pages/admin/DashboardTabs";
 import { InvestorsList } from "@/Pages/admin/Investors";
 import Plans from "@/Pages/admin/Plans";
-import { renderReferralsHistory } from "@/Pages/admin/ReferralsHistory";
+import { ReferralsHistory } from "@/Pages/admin/ReferralsHistory";
+
 
 // import { renderSettings } from "@/Pages/admin/Settings";
 import {
@@ -59,6 +60,45 @@ const Dashboard = () => {
       toast.error("Failed to log out");
     }
   };
+
+  const [adminProfile, setAdminProfile] = useState({
+  name: "",
+  email: "",
+  role: "",
+});
+
+useEffect(() => {
+  const fetchAdminProfile = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        toast.error("Please login again");
+        navigate("/login-register");
+        return;
+      }
+
+      const response = await axios.get(`${import.meta.env.VITE_URL}/me`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.data) {
+        setAdminProfile({
+          name: response.data.name,
+          email: response.data.email,
+          role: response.data.role,
+        });
+      }
+    } catch (error) {
+      toast.error("Failed to load admin profile");
+      console.error("Admin profile fetch error:", error);
+    }
+  };
+
+  fetchAdminProfile();
+}, []);
+
   const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false);
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
   const [receiveCurrencydata, setReceiveCurrencydata] = useState<any[]>([]);
@@ -445,7 +485,7 @@ const Dashboard = () => {
       case "Plans":
         return <Plans />;
       case "ReferralsHistory":
-        return renderReferralsHistory();
+        return ReferralsHistory ();
       // case "Settings":
       //   return renderSettings();
       case "LogOut":
@@ -547,10 +587,13 @@ const Dashboard = () => {
             <DropdownMenuContent className="w-50 mr-4">
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">William</p>
-                  <p className="text-xs leading-none text-muted-foreground">
-                    admin@example.com
-                  </p>
+                  <p className="text-sm font-medium leading-none">
+  {adminProfile.name || "Admin"}
+</p>
+<p className="text-xs leading-none text-muted-foreground">
+  {adminProfile.email || "admin@example.com"}
+</p>
+
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
@@ -635,9 +678,10 @@ const Dashboard = () => {
         </Avatar>
         {isSidebarOpen && (
           <div className="mx-auto text-center flex flex-col text-lg ">
-            Hello,William
-            <span className="text-[15px] font-[400px]">admin</span>
-          </div>
+  {adminProfile.name || "Admin"}
+  <span className="text-[15px] font-[400px]">{adminProfile.role || "admin"}</span>
+</div>
+
         )}
         <nav className="p-4 space-y-1 ">
           {sidebarItems.map((item) => (

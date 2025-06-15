@@ -1,9 +1,6 @@
 
-
-
 const InvestmentPlan = require("../models/InvestmentPlan");
 const UserInvestment = require("../models/UserInvestment");
-
 const ReferralTree = require("../models/ReferralTree");
 const VirtualWallet = require("../models/VirtualWallet");
 const ReferralEarningLog = require("../models/ReferralEarningLog");
@@ -28,6 +25,11 @@ exports.investInPlan = async (req, res) => {
       return res.status(400).json({ message: "Insufficient virtual wallet balance" });
     }
 
+    // ✅ Check if this is the first investment
+    const existing = await UserInvestment.findOne({ userId });
+    const isFirstInvestment = !existing;
+
+    // ✅ Proceed with investment
     const dailyEarning = amount * (plan.roi / 100);
 
     const newInvestment = new UserInvestment({
@@ -36,7 +38,7 @@ exports.investInPlan = async (req, res) => {
       amount,
       roi: plan.roi,
       dailyEarning,
-      totalDays: plan.totalDays || undefined, // optional field
+      totalDays: plan.totalDays || undefined,
     });
     await newInvestment.save();
 
@@ -51,53 +53,58 @@ exports.investInPlan = async (req, res) => {
       description: `Invested in ${plan.name} plan`,
     });
 
-    // ✅ Referral bonus logic: Only last 3 uplines get reward (immediate parents)
-    const levels = [6, 3, 1]; // percentages for level 1 to 3
-    const uplines = [];
-    let currentUserId = userId;
+    // ✅ Distribute referral bonus
+    if (isFirstInvestment && amount >= 100) {
+      const levels = [6, 3, 1]; // % per level
+      const uplines = [];
 
-    for (let i = 0; i < 3; i++) {
-      const ref = await ReferralTree.findOne({ childId: currentUserId });
-      if (!ref || !ref.parentId) break;
+      let currentUserId = userId;
 
-      uplines.push(ref.parentId);
-      currentUserId = ref.parentId;
-    }
-
-    for (let i = 0; i < uplines.length; i++) {
-      const parentId = uplines[i];
-      const bonusPercent = levels[i];
-      const bonusAmount = (amount * bonusPercent) / 100;
-
-      let parentWallet = await VirtualWallet.findOne({ userId: parentId });
-      if (!parentWallet) {
-        parentWallet = new VirtualWallet({ userId: parentId, balance: 0 });
+      for (let i = 0; i < 3; i++) {
+        const ref = await ReferralTree.findOne({ userId: currentUserId });
+        if (!ref || !ref.parentId) break;
+        uplines.push(ref.parentId);
+        currentUserId = ref.parentId;
       }
 
-      parentWallet.balance += bonusAmount;
-      await parentWallet.save();
+      for (let i = 0; i < uplines.length; i++) {
+        const parentId = uplines[i];
+        const bonusPercent = levels[i];
+        const bonusAmount = parseFloat(((amount * bonusPercent) / 100).toFixed(2));
 
-      await WalletTransaction.create({
-        userId: parentId,
-        type: "Referral Bonus",
-        amount: bonusAmount,
-        balanceAfter: parentWallet.balance,
-        description: `Level ${i + 1} referral bonus from ${req.user.mobile}`,
-      });
-      // ✅ Track in referral earning log
-  await ReferralEarningLog.create({
-    earnedBy: parentId,
-    fromUser: userId,
-    level: i + 1,
-    amount: bonusAmount,
-    reason: "Investment Referral",
-  });
+        if (!bonusAmount || bonusAmount <= 0) continue;
+
+        let parentWallet = await VirtualWallet.findOne({ userId: parentId });
+        if (!parentWallet) {
+          parentWallet = new VirtualWallet({ userId: parentId, balance: 0 });
+        }
+
+        parentWallet.balance += bonusAmount;
+        await parentWallet.save();
+
+        await WalletTransaction.create({
+          userId: parentId,
+          type: "Referral Bonus",
+          amount: bonusAmount,
+          balanceAfter: parentWallet.balance,
+          description: `Level ${i + 1} referral bonus from ${req.user.mobile}`,
+        });
+
+        await ReferralEarningLog.create({
+          earnedBy: parentId,
+          fromUser: userId,
+          level: i + 1,
+          amount: bonusAmount,
+          reason: "Investment Referral",
+        });
+      }
     }
 
     res.status(201).json({
       message: "Investment successful",
       investment: newInvestment,
     });
+
   } catch (err) {
     console.error("❌ Investment error:", err);
     res.status(500).json({ message: "Investment error", error: err.message });
@@ -142,7 +149,7 @@ exports.getAllInvestments = async (req, res) => {
     const investments = await UserInvestment.find()
       .populate("userId", "name mobile profilePic")
       .populate("planId", "name createdAt amount")
-      .sort({ createdAt: -1 });
+      .sort({ updatedAt: -1 });
 
     res.status(200).json({ investments });
   } catch (err) {

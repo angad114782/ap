@@ -452,7 +452,6 @@ const ProfileScreen: React.FC = () => {
               className={`bg-transparent border-b ${isEditingName ? "border-white" : "border-gray-500"
                 } text-center text-3xl font-bold focus:outline-none px-10 pt-3 transition-colors w-full`}
               value={name}
-              readOnly={!isEditingName}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 setName(e.target.value)
               }
@@ -652,7 +651,6 @@ const QuickActions: React.FC<QuickActionsProps> = ({
                   : "border-gray-600"
                 } rounded-lg px-4 py-3 text-sm text-white focus:outline-none transition-all duration-300 pr-10`}
               value={email}
-              readOnly={!isEditingEmail}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 setEmail(e.target.value)
               }
@@ -682,7 +680,6 @@ const QuickActions: React.FC<QuickActionsProps> = ({
                   : "border-gray-600"
                 } rounded-lg px-4 py-3 text-sm text-white focus:outline-none transition-all duration-300 pr-10`}
               value={mobile}
-              readOnly={!isEditingMobile}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 setMobile(e.target.value)
               }

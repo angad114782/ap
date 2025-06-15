@@ -3,6 +3,7 @@ import Image1 from "@/assets/1.jpg";
 import Image2 from "@/assets/2.jpg";
 import Image3 from "@/assets/3.jpg";
 import Image4 from "@/assets/4.jpg";
+import Image5 from "@/assets/5.jpg";
 
 const BannerCarousel = ({ button = true }: { button?: boolean }) => {
   // Sample banner images - you can replace with your own
@@ -26,6 +27,11 @@ const BannerCarousel = ({ button = true }: { button?: boolean }) => {
       id: 4,
       src: Image4,
       alt: "Banner 4",
+    },
+    {
+      id: 5,
+      src: Image5,
+      alt: "Banner 5",
     },
   ];
 

@@ -39,8 +39,11 @@ const EnterOtp = () => {
 
       // If from forgot password, navigate to main screen
       if (from === "forgot-password") {
-        navigate("/main-screen");
-      }
+  navigate("/set-password", {
+    state: { email }, // ✅ This passes email to next screen
+  });
+}
+
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Invalid OTP");
     } finally {
@@ -52,7 +55,7 @@ const EnterOtp = () => {
   const handleResendOTP = async () => {
     try {
       setLoading(true);
-      await axios.post(`${import.meta.env.VITE_URL}/resend-otp`, {
+      await axios.post(`${import.meta.env.VITE_URL}/forgot-password`, {
         email,
         type: from,
       });
@@ -80,13 +83,14 @@ const EnterOtp = () => {
       <div className=" flex flex-col gap-6 w-full px-3 h-full">
         {/* Header */}
         <div className="flex-none text-start">
-          <h2 className="mt-3 font-medium text-[#F7F7F7] text-[28px] leading-tight">
-            Confirm your phone
-          </h2>
-          <p className="text-[#F7F7F7] text-sm mt-1">
-            We send 6 digit code to +91 17205566
-          </p>
-        </div>
+  <h2 className="mt-3 font-medium text-[#F7F7F7] text-[28px] leading-tight">
+    Confirm your email address
+  </h2>
+  <p className="text-[#F7F7F7] text-sm mt-1">
+    We sent a 6-digit code to <span className="font-semibold">{email}</span>
+  </p>
+</div>
+
 
         {/* Form */}
         <div className="flex flex-col gap-5 mt-10 items-center text-white">
