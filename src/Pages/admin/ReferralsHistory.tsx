@@ -146,7 +146,7 @@ export const ReferralHistory = () => {
                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-6 w-full sm:w-auto sm:ml-auto">
                       {/* Commission Info */}
                       <div className="text-left sm:text-right w-full sm:w-auto">
-                        <div className="font-semibold">REGVDGD</div>
+                        <div className="font-semibold">ADMINREF9999</div>
                         <div className="text-xs sm:text-sm text-gray-500">
                           Refer Code
                         </div>
