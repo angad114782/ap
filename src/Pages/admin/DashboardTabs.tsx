@@ -158,16 +158,22 @@ const MobileCard = ({
       {/* Transaction Details */}
       <div className="space-y-2 mb-4">
         <div className="flex items-center justify-between py-2 border-b border-gray-100">
-          <span className="text-xs font-medium text-gray-500">
-            {title === "Deposit"
-              ? "Wallet"
-              : title === "Withdrawals"
+          <span
+            className={`${
+              title === "Deposit" ? "hidden" : "block"
+            } text-xs font-medium text-gray-500`}
+          >
+            {title === "Withdrawals"
               ? "Wallet"
               : title === "Transaction"
               ? "WalletId"
               : "Plan"}
           </span>
-          <span className="font-bold text-sm text-gray-900 truncate ml-2">
+          <span
+            className={`   ${
+              title === "Deposit" ? "hidden" : "block"
+            } font-bold text-sm text-gray-900 truncate ml-2`}
+          >
             {dataColumns.plan}
           </span>
         </div>
