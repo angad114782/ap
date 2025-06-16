@@ -5,7 +5,7 @@ const ReferralTree = require("../models/ReferralTree");
 const VirtualWallet = require("../models/VirtualWallet");
 const ReferralEarningLog = require("../models/ReferralEarningLog");
 const WalletTransaction = require("../models/WalletTransaction");
-
+const { checkAndRewardMilestone } = require("../utils/rewardMilestone");
 exports.investInPlan = async (req, res) => {
   try {
     const { planId, amount } = req.body;
@@ -41,6 +41,7 @@ exports.investInPlan = async (req, res) => {
       totalDays: plan.totalDays || undefined,
     });
     await newInvestment.save();
+await checkAndRewardMilestone(userId);
 
     wallet.balance -= amount;
     await wallet.save();

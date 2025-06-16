@@ -19,6 +19,7 @@ const {
   verifyOtp,
   getAllUsers,
   getMe ,
+  getUserById,
 } = require("../controllers/authController");
 
 // Auth Routes
@@ -30,6 +31,7 @@ router.post("/verify-otp", verifyOtp);
 router.post("/reset-password", resetPassword);           
 router.post("/change-password", auth, resetPassword); 
 router.put("/update-profile", auth, upload.single("profilePic"), updateProfile);
+router.get("/user/:id", getUserById);
 
 // Admin Routes
 router.get("/admin/all-users", auth, isAdmin, getAllUsers);

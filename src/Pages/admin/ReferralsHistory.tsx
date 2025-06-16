@@ -164,12 +164,6 @@ export const ReferralHistory = () => {
                         </div>
                       </div>
                       <div className="text-left sm:text-right w-full sm:w-auto">
-                        <div className="font-semibold">Upline Data</div>
-                        <div className="text-xs sm:text-sm text-gray-500">
-                          Upline
-                        </div>
-                      </div>
-                      <div className="text-left sm:text-right w-full sm:w-auto">
                         <div className="font-semibold">Downline Data</div>
                         <div className="text-xs sm:text-sm text-gray-500">
                           Downline
@@ -182,16 +176,7 @@ export const ReferralHistory = () => {
                         </div>
                       </div>
 
-                      {/* Date */}
-                      <div className="text-left sm:text-right w-full sm:w-auto">
-                        <div className="text-xs sm:text-sm text-gray-500">
-                          {new Date(data.joinedAt).toLocaleDateString("en-US", {
-                            year: "numeric",
-                            month: "long", // Use 'long' for full month name
-                            day: "numeric",
-                          })}
-                        </div>
-                      </div>
+                      
 
                       {/* Status Badge */}
                       {/* <Badge variant="default" className="w-fit">

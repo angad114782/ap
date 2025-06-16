@@ -127,12 +127,39 @@ export const MyWalletsManagement = () => {
     }
   };
 
-  const handleDeleteWallet = (e: React.MouseEvent, walletId: string) => {
-    e.stopPropagation(); // Prevent wallet selection when clicking delete
-    // Add your delete functionality here
-    console.log("Delete wallet:", walletId);
-    toast.success("Wallet deleted successfully");
-  };
+const handleDeleteWallet = async (e: React.MouseEvent, walletId: string) => {
+  e.stopPropagation();
+
+  if (selectedWallet === walletId) {
+    toast.warning("Cannot delete the active wallet. Please select another first.");
+    return;
+  }
+
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      toast.error("Please login again");
+      return;
+    }
+
+    const response = await axios.delete(`${import.meta.env.VITE_URL}/wallet/${walletId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (response.status === 200) {
+      toast.success("Wallet deleted successfully!");
+      fetchUserWallets(); // Refresh wallet list
+    } else {
+      throw new Error("Failed to delete wallet");
+    }
+  } catch (error) {
+    console.error("Error deleting wallet:", error);
+    toast.error("Failed to delete wallet");
+  }
+};
+
 
   const getWalletIcon = (name: string | undefined) => {
     const safeName = name?.toLowerCase?.() || "";

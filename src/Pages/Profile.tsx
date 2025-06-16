@@ -42,6 +42,7 @@ interface QuickActionsProps {
   startEditingMobile: () => void;
   setIsEditingEmail: (editing: boolean) => void;
   setIsEditingMobile: (editing: boolean) => void;
+  referredByName: string;
 }
 const userWallets = [
   {
@@ -78,6 +79,8 @@ const ProfileScreen: React.FC = () => {
   const [showWalletDrawer, setShowWalletDrawer] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [referredByName, setReferredByName] = useState<string>("");
 
   const nameInputRef = useRef<HTMLInputElement>(
     null
@@ -160,6 +163,10 @@ const ProfileScreen: React.FC = () => {
       setInitialEmail(data.email || "");
       setInitialMobile(data.mobile || "");
 
+       if (data.referredBy) {
+  fetchReferredByName(data.referredBy);
+}
+
       // Handle profile picture - make sure the URL is correct
       if (data.profilePic) {
         const baseUrl = import.meta.env.VITE_URL.split("/api")[0]; // Get base URL without /api
@@ -195,6 +202,36 @@ const ProfileScreen: React.FC = () => {
       setIsLoading(false);
     }
   };
+const fetchReferredByName = async (refId: string) => {
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    const res = await fetch(`${import.meta.env.VITE_URL}/user/${refId}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+      },
+    });
+
+    if (!res.ok) {
+      console.warn(`Referrer fetch failed. Status: ${res.status}`);
+      setReferredByName("Unknown");
+      return;
+    }
+
+    const data = await res.json();
+    if (data && data.name) {
+      setReferredByName(data.name);
+    } else {
+      setReferredByName("Unknown");
+    }
+  } catch (err) {
+    console.error("❌ Failed to fetch referredBy user:", err);
+    setReferredByName("Unknown");
+  }
+};
 
   // useEffect(() => {
   //   fetchUserWallets();
@@ -476,6 +513,7 @@ const ProfileScreen: React.FC = () => {
           startEditingMobile={startEditingMobile}
           setIsEditingEmail={setIsEditingEmail}
           setIsEditingMobile={setIsEditingMobile}
+          referredByName={referredByName}
         />
 
         {/* Action Buttons */}
@@ -620,6 +658,7 @@ const QuickActions: React.FC<QuickActionsProps> = ({
   startEditingMobile,
   setIsEditingEmail,
   setIsEditingMobile,
+  referredByName,
 }) => {
   // const navigate = useNavigate();
   // const [showWalletDrawer, setShowWalletDrawer] = useState(false);
@@ -695,6 +734,21 @@ const QuickActions: React.FC<QuickActionsProps> = ({
       </div>
 
       {/* Wallet Section */}
+
+      {/* Referred By Section */}
+      {referredByName && (
+<div className="mb-4">
+  <label className="block text-sm font-medium text-white mb-2 ml-2">
+    Referred By
+  </label>
+  <input
+    type="text"
+    value={referredByName || "Not available"}
+    disabled
+    className="w-full bg-[#222] border-2 border-gray-600 rounded-lg px-4 py-3 text-sm text-white focus:outline-none cursor-not-allowed"
+  />
+</div>
+)}
     </div>
   );
 };

@@ -9,6 +9,7 @@ const userInvestmentSchema = new mongoose.Schema({
   totalDays: { type: Number }, // optional, still allowed
   earnedTillNow: { type: Number, default: 0 },
   startDate: { type: Date, default: Date.now },
+  lastUpdated: { type: String, default: null },
   isCompleted: { type: Boolean, default: false }, // used when exiting
 });
 
