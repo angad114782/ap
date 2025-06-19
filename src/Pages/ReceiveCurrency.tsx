@@ -62,8 +62,8 @@ const ReceiveCurrency = () => {
   };
 
   const handleContinue = () => {
-    if (!amount || parseFloat(amount) <= 0) {
-      toast.error("Please enter a valid amount");
+    if (!amount || parseFloat(amount) <= 10) {
+      toast.error("Minimum withdrawal is 10 points");
       return;
     }
 
