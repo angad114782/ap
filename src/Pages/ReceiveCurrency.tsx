@@ -67,10 +67,22 @@ const ReceiveCurrency = () => {
       return;
     }
 
-    navigate("/receive-final", {
-      state: { amount: parseFloat(amount) },
-    });
-  };
+  const today = new Date();
+  const day = today.getDay(); // Sunday = 0, Saturday = 6
+
+  // Check for weekend
+  if (day === 0 || day === 6) {
+    toast.error("Withdrawals are not allowed on Saturday or Sunday due to market closure.");
+    return;
+  }
+
+  // Navigate to next screen
+  navigate("/receive-final", {
+    state: { amount: parseFloat(amount) },
+  });
+};
+
+
 
   // if (isLoading) {
   //   return (

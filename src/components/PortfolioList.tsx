@@ -72,14 +72,14 @@ const PortfolioList = ({
             key={item.id}
             className="grid grid-cols-6 items-center px-4 py-3 bg-gray-900 font-display rounded-lg"
           >
-            <div className="text-sm">{item.plan}</div>
-            <div className="text-sm text-center">{item.roi}%</div>
-            <div className="text-sm text-center">{item.date}</div>
+            <div className="text-xs">{item.plan}</div>
+            <div className="text-xs text-center">{item.roi}%</div>
+            <div className="text-xs text-center">{item.date}</div>
 
-            <div className="text-sm text-right text-green-400">
+            <div className="text-xs text-right text-green-400">
               {item.investedAmount.toLocaleString()}
             </div>
-            <div className="text-sm text-right text-green-500 font-semibold">
+            <div className="text-xs text-right text-green-500 font-semibold">
               {item.amount.toLocaleString()}
             </div>
 
