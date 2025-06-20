@@ -62,15 +62,27 @@ const ReceiveCurrency = () => {
   };
 
   const handleContinue = () => {
-    if (!amount || parseFloat(amount) <= 0) {
-      toast.error("Please enter a valid amount");
-      return;
-    }
+  const today = new Date();
+  const day = today.getDay(); // Sunday = 0, Saturday = 6
 
-    navigate("/receive-final", {
-      state: { amount: parseFloat(amount) },
-    });
-  };
+  // Check for weekend
+  if (day === 0 || day === 6) {
+    toast.error("Withdrawals are not allowed on Saturday or Sunday due to market closure.");
+    return;
+  }
+
+  // Check amount
+  if (!amount || parseFloat(amount) <= 10) {
+    toast.error("Minimum withdrawal is 10 points");
+    return;
+  }
+
+  // Navigate to next screen
+  navigate("/receive-final", {
+    state: { amount: parseFloat(amount) },
+  });
+};
+
 
   // if (isLoading) {
   //   return (
