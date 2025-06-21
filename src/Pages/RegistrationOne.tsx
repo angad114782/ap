@@ -51,7 +51,7 @@ const Register = () => {
       if (response.status === 201) {
         localStorage.setItem("deviceId", deviceId);
         toast.success("Registration successful!");
-        navigate("/login-register"); // Navigate to login since MPIN is set after login
+        navigate("/enter-otp"); // Navigate to login since MPIN is set after login
       }
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Registration failed");
