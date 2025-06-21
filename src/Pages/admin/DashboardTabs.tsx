@@ -191,7 +191,14 @@ const MobileCard = ({
             {dataColumns?.dateTime.toDateString()}
           </span>
         </div>
-
+        {title === "Investments" && (
+          <div className="flex items-center justify-between py-2 border-b border-gray-100">
+            <span className="text-xs font-medium text-gray-500">Days Left</span>
+            <span className="font-medium text-sm text-gray-900 truncate ml-2">
+              50
+            </span>
+          </div>
+        )}
         {/* Move remarks section here and combine with button */}
         {title !== "Transaction" &&
           title !== "Investments" &&
@@ -368,6 +375,7 @@ const DepositComponent = ({
                       <TableHead>Mobile</TableHead>
                       <TableHead>Amount</TableHead>
                       <TableHead>Date & Time</TableHead>
+
                       <TableHead>
                         {title === "Transaction"
                           ? "Type"
@@ -375,6 +383,9 @@ const DepositComponent = ({
                           ? "Roi"
                           : "Status"}
                       </TableHead>
+                      {title === "Investments" && (
+                        <TableHead className="text-center">Days Left</TableHead>
+                      )}
                       {title !== "Transaction" && title !== "Investments" && (
                         <>
                           <TableHead className="w-[200px]">Remarks</TableHead>
@@ -416,6 +427,7 @@ const DepositComponent = ({
                         <TableCell>
                           {dataColumns.dateTime.toLocaleDateString("en-IN")}
                         </TableCell>
+
                         <TableCell>
                           <span
                             className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusStyles(
@@ -429,6 +441,9 @@ const DepositComponent = ({
                             }`}
                           </span>
                         </TableCell>
+                        {title === "Investments" && (
+                          <TableCell className="text-center">50</TableCell>
+                        )}
                         {title !== "Transaction" && title !== "Investments" && (
                           <>
                             <TableCell className="w-[200px] max-w-[200px]">

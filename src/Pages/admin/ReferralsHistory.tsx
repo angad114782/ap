@@ -1,5 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { User } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ChevronDown, User } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -138,25 +144,53 @@ export const ReferralHistory = () => {
                         <div className="font-medium">
                           {data.user.name ? data.user.name : "User"}
                         </div>
-                        <div className="text-sm text-gray-500">Referred by</div>
+                        <div className="text-sm text-gray-500">
+                          ADMINREF9999
+                        </div>
+                      </div>
+                    </div>
+                    <div className="">Referred By</div>
+                    {/* ReferredBy User Info */}
+                    <div className="flex items-center gap-4 w-full sm:w-auto">
+                      {/* <Avatar className="h-10 w-10"> */}
+
+                      {data?.user?.profilePic ? (
+                        <img
+                          src={`${import.meta.env.VITE_URL.slice(0, -4)}${
+                            data?.user?.profilePic
+                          }`}
+                          alt={`User Picture`}
+                          className="w-10 h-10 object-contain rounded-full"
+                        />
+                      ) : (
+                        <User className="h-10 w-10" />
+                      )}
+                      {/* </Avatar> */}
+                      <div>
+                        <div className="font-medium">
+                          {data.user.name ? data.user.name : "User"}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          ADMINREF9999
+                        </div>
                       </div>
                     </div>
 
                     {/* Mobile: Stack vertically, Desktop: Show in row */}
                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-6 w-full sm:w-auto sm:ml-auto">
                       {/* Commission Info */}
-                      <div className="text-left sm:text-right w-full sm:w-auto">
+                      {/* <div className="text-left sm:text-right w-full sm:w-auto">
                         <div className="font-semibold">ADMINREF9999</div>
                         <div className="text-xs sm:text-sm text-gray-500">
                           Refer Code
                         </div>
-                      </div>
-                      <div className="text-left sm:text-right w-full sm:w-auto">
+                      </div> */}
+                      {/* <div className="text-left sm:text-right w-full sm:w-auto">
                         <div className="font-semibold">500</div>
                         <div className="text-xs sm:text-sm text-gray-500">
                           Total Invest
                         </div>
-                      </div>
+                      </div> */}
                       <div className="text-left sm:text-right w-full sm:w-auto">
                         <div className="font-semibold">{data.bonusEarned}</div>
                         <div className="text-xs sm:text-sm text-gray-500">
@@ -164,7 +198,18 @@ export const ReferralHistory = () => {
                         </div>
                       </div>
                       <div className="text-left sm:text-right w-full sm:w-auto">
-                        <div className="font-semibold">Downline Data</div>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger className="font-semibold">
+                            <div className="flex">
+                              <div>Downline</div> <ChevronDown />
+                            </div>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent>
+                            <DropdownMenuItem>Downline 1</DropdownMenuItem>
+                            <DropdownMenuItem>Downline 2</DropdownMenuItem>
+                            <DropdownMenuItem>Downline 3</DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                         <div className="text-xs sm:text-sm text-gray-500">
                           Downline
                         </div>
@@ -175,8 +220,6 @@ export const ReferralHistory = () => {
                           Commission
                         </div>
                       </div>
-
-                      
 
                       {/* Status Badge */}
                       {/* <Badge variant="default" className="w-fit">

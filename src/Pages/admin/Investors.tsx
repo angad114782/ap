@@ -13,6 +13,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ChevronDown } from "lucide-react";
 
 export interface Investor {
   name: string;
@@ -175,11 +176,11 @@ export const InvestorsList = () => {
           {investorsList.map((investor, index) => (
             <div
               key={index}
-              className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between p-4 border rounded-lg"
+              className="flex flex-col gap-8 sm:flex-row sm:items-center sm:justify-between p-4 border rounded-lg"
             >
-              {/* Info Block */}
-              <div className="flex items-center gap-4">
-                <Avatar className="h-10 w-10">
+              {/* Primary User Info */}
+              <div className="flex items-center gap-4 w-full sm:w-auto min-w-0">
+                <Avatar className="h-10 w-10 flex-shrink-0">
                   <AvatarFallback>
                     {investor.profilePic ? (
                       <img
@@ -196,19 +197,54 @@ export const InvestorsList = () => {
                     )}
                   </AvatarFallback>
                 </Avatar>
-                <div>
-                  <div className="font-medium">{investor.name}</div>
-                  <div className="text-sm text-gray-500">{investor.mobile}</div>
+                <div className="min-w-0 flex-1 sm:flex-none sm:max-w-[200px] md:max-w-full">
+                  <div
+                    className="font-medium break-words sm:truncate overflow-hidden line-clamp-2 sm:line-clamp-1"
+                    title={investor.name}
+                  >
+                    {investor.name}
+                  </div>
+                  <div className="text-sm text-gray-500 truncate">
+                    ADMINREF9999(dummy)
+                  </div>
+                </div>
+              </div>
+              {/* Additional Info - Stack on mobile, inline on desktop */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-6 w-full sm:w-auto">
+                <div className="text-left sm:text-right w-full sm:w-auto">
+                  <div className="font-medium">{investor?.mobile}</div>
+                  <div className="text-sm text-gray-500">Mobile</div>
+                </div>
+                <div className="text-left sm:text-right w-full sm:w-auto">
+                  <div className="font-medium">7234822444</div>
+                  <div className="text-sm text-gray-500">Upline</div>
+                </div>
+                <div className="text-left sm:text-right w-full sm:w-auto">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger className="font-semibold">
+                      <div className="flex">
+                        <div>Plan Invested</div> <ChevronDown />
+                      </div>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuItem>Downline 1</DropdownMenuItem>
+                      <DropdownMenuItem>Downline 2</DropdownMenuItem>
+                      <DropdownMenuItem>Downline 3</DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  <div className="text-sm text-gray-500">Plan Invested</div>
+                </div>
+                <div className="text-left sm:text-right w-full sm:w-auto">
+                  <div className="font-medium">501</div>
+                  <div className="text-sm text-gray-500">
+                    Currently Invested
+                  </div>
                 </div>
               </div>
 
-              {/* Investment Info */}
-              <div className="flex flex-wrap sm:flex-nowrap md:flex-wrap gap-4 sm:gap-6 justify-between sm:justify-start">
-                {/* <div className="text-left">
-                  <div className="font-semibold">${investor.totalInvested}</div>
-                  <div className="text-xs text-gray-500">Total Invested</div>
-                </div> */}
-                <div className="text-left">
+              {/* Status and Date Info */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-6 w-full sm:w-auto sm:ml-auto">
+                <div className="text-left sm:text-right w-full sm:w-auto">
                   <div className="text-xs text-gray-500">
                     Joined: {new Date(investor.joinDate).toLocaleDateString()}
                   </div>
@@ -234,7 +270,6 @@ export const InvestorsList = () => {
                       className="w-[100px]"
                     >
                       <DropdownMenuItem
-                        // onClick={() => handleStatusChange(index, "Active")}
                         className={`${
                           investor.status === "Active" ? "text-green-600" : ""
                         } justify-center`}
@@ -242,7 +277,6 @@ export const InvestorsList = () => {
                         Active
                       </DropdownMenuItem>
                       <DropdownMenuItem
-                        // onClick={() => handleStatusChange(index, "Inactive")}
                         className={`${
                           investor.status === "Inactive" ? "text-gray-600" : ""
                         } justify-center`}
