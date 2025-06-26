@@ -347,15 +347,15 @@ exports.forgotPassword = async (req, res) => {
     await user.save();
 
     // Send OTP via email using Nodemailer
-const transporter = nodemailer.createTransport({
-  host: "smtp.hostinger.com", // typically: mail.yourdomain.com
-  port: 465,                // 465 for SSL, or 587 for TLS
-  secure: true,             // true for 465, false for 587
-  auth: {
-    user: process.env.SMTP_EMAIL,    // e.g., support@apart-x.pro
-    pass: process.env.SMTP_PASSWORD, // your email password (or app password if enabled)
-  },
-});
+    const transporter = nodemailer.createTransport({
+      host: "smtp.hostinger.com", // typically: mail.yourdomain.com
+      port: 465,                // 465 for SSL, or 587 for TLS
+      secure: true,             // true for 465, false for 587
+      auth: {
+        user: process.env.SMTP_EMAIL,    // e.g., support@apart-x.pro
+        pass: process.env.SMTP_PASSWORD, // your email password (or app password if enabled)
+      },
+    });
 
 
     await transporter.sendMail({
@@ -504,10 +504,10 @@ exports.getMe = async (req, res) => {
       profilePic: user.profilePic,
       referredBy: user.referredBy
         ? {
-            name: user.referredBy.name,
-            mobile: user.referredBy.mobile,
-            email: user.referredBy.email,
-          }
+          name: user.referredBy.name,
+          mobile: user.referredBy.mobile,
+          email: user.referredBy.email,
+        }
         : null,
     });
   } catch (err) {

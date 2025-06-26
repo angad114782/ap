@@ -739,7 +739,7 @@ const QuickActions: React.FC<QuickActionsProps> = ({
       {referredByName && (
 <div className="mb-0 mt-4">
   <label className="block text-sm font-medium text-white mb-2 ml-2">
-    Upliner Name
+    Upline Name
   </label>
   <input
     type="text"

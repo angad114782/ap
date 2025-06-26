@@ -48,7 +48,7 @@ const Register = () => {
         }
       );
 
-      if (response.status === 201) {
+      if (response.status === 200) {
         localStorage.setItem("deviceId", deviceId);
         toast.success("Registration successful!");
         navigate("/login-register"); // Navigate to login since MPIN is set after login
