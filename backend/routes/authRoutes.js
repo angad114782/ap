@@ -19,7 +19,11 @@ const {
   verifyOtp,
   getAllUsers,
   getMe ,
+  regOtp,
+  sendRegisterOtp,
+  resendRegisterOtp,
   getUserById,
+  updateUserStatus,
 } = require("../controllers/authController");
 
 // Auth Routes
@@ -28,10 +32,14 @@ router.post("/login", loginUser);
 router.post("/set-mpin", setMpin);
 router.post("/forgot-password", forgotPassword);
 router.post("/verify-otp", verifyOtp);
+router.post("/reg-otp", regOtp);
+router.post("/send-register-otp", sendRegisterOtp);
+router.post("/resend-register-otp", resendRegisterOtp);
 router.post("/reset-password", resetPassword);           
 router.post("/change-password", auth, resetPassword); 
 router.put("/update-profile", auth, upload.single("profilePic"), updateProfile);
 router.get("/user/:id", getUserById);
+router.put("/user/status-update", auth, updateUserStatus);
 
 // Admin Routes
 router.get("/admin/all-users", auth, isAdmin, getAllUsers);

@@ -62,11 +62,6 @@ const ReceiveCurrency = () => {
   };
 
   const handleContinue = () => {
-    if (!amount || parseFloat(amount) <= 10) {
-      toast.error("Minimum withdrawal is 10 points");
-      return;
-    }
-
   const today = new Date();
   const day = today.getDay(); // Sunday = 0, Saturday = 6
 
@@ -76,12 +71,17 @@ const ReceiveCurrency = () => {
     return;
   }
 
+  // Check amount
+  if (!amount || parseFloat(amount) <= 10) {
+    toast.error("Minimum withdrawal is 10 points");
+    return;
+  }
+
   // Navigate to next screen
   navigate("/receive-final", {
     state: { amount: parseFloat(amount) },
   });
 };
-
 
 
   // if (isLoading) {

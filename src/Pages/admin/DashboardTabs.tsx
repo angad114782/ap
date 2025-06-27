@@ -191,6 +191,25 @@ const MobileCard = ({
             {dataColumns?.dateTime.toDateString()}
           </span>
         </div>
+      {title === "Investments" && (() => {
+  const daysPassed = Math.floor(
+    (new Date().getTime() - new Date(dataColumns.dateTime).getTime()) /
+    (1000 * 60 * 60 * 24)
+  );
+  const daysLeft = 60 - daysPassed;
+
+  return (
+    <div className="flex items-center justify-between py-2 border-b border-gray-100">
+      <span className="text-xs font-medium text-gray-500">Days</span>
+      <span className="font-medium text-sm text-gray-900 truncate ml-2">
+        {daysLeft > 0
+          ? `${daysLeft} days left`
+          : `${Math.abs(daysLeft)}+ days completed`}
+      </span>
+    </div>
+  );
+})()}
+
 
         {/* Move remarks section here and combine with button */}
         {title !== "Transaction" &&
@@ -291,6 +310,12 @@ const DepositComponent = ({
 }: DataTableProps) => {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [editingRemarkId, setEditingRemarkId] = useState<number | null>(null);
+  const sortedData = [...data].sort((a, b) => {
+  const dateDiff = new Date(b.dateTime).getTime() - new Date(a.dateTime).getTime();
+  if (dateDiff !== 0) return dateDiff;
+  return b.id > a.id ? 1 : -1; // Secondary sort by id
+});
+
   console.log(data, "vcvcvcvcvcv");
   useEffect(() => {
     const handleResize = () => {
@@ -333,7 +358,7 @@ const DepositComponent = ({
 
       {isMobile ? (
         <div className="space-y-4">
-          {data.map((dataColumns) => (
+          {sortedData.map((dataColumns) => (
             <MobileCard
               key={dataColumns.id}
               dataColumns={dataColumns}
@@ -368,6 +393,7 @@ const DepositComponent = ({
                       <TableHead>Mobile</TableHead>
                       <TableHead>Amount</TableHead>
                       <TableHead>Date & Time</TableHead>
+
                       <TableHead>
                         {title === "Transaction"
                           ? "Type"
@@ -375,6 +401,9 @@ const DepositComponent = ({
                           ? "Roi"
                           : "Status"}
                       </TableHead>
+                      {title === "Investments" && (
+                        <TableHead className="text-center">Days</TableHead>
+                      )}
                       {title !== "Transaction" && title !== "Investments" && (
                         <>
                           <TableHead className="w-[200px]">Remarks</TableHead>
@@ -384,7 +413,8 @@ const DepositComponent = ({
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {data.map((dataColumns) => (
+                    
+                    {sortedData.map((dataColumns) => (
                       <TableRow key={dataColumns.id}>
                         <TableCell className="font-medium">
                           <ArrowDownRight className="inline h-8 w-8 rounded-full bg-green-500 text-white p-2" />
@@ -416,6 +446,7 @@ const DepositComponent = ({
                         <TableCell>
                           {dataColumns.dateTime.toLocaleDateString("en-IN")}
                         </TableCell>
+
                         <TableCell>
                           <span
                             className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusStyles(
@@ -429,6 +460,23 @@ const DepositComponent = ({
                             }`}
                           </span>
                         </TableCell>
+                        {title === "Investments" && (() => {
+  const daysPassed = Math.floor(
+    (new Date().getTime() - new Date(dataColumns.dateTime).getTime()) /
+    (1000 * 60 * 60 * 24)
+  );
+  const daysLeft = 60 - daysPassed;
+
+  return (
+    <TableCell className="text-center">
+      {daysLeft > 0
+        ? `${daysLeft} days left`
+        : `${Math.abs(daysLeft)}+ days completed`}
+    </TableCell>
+  );
+})()}
+
+
                         {title !== "Transaction" && title !== "Investments" && (
                           <>
                             <TableCell className="w-[200px] max-w-[200px]">

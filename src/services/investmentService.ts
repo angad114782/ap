@@ -28,6 +28,24 @@ export const investmentService = {
       );
     }
   },
+updateStatus: async (userId: string, status: "Active" | "Inactive") => {
+  const token = localStorage.getItem("token");
+  const res = await fetch(`${import.meta.env.VITE_URL}/user/status-update`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ userId, status }),
+  });
+
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.message || "Status update failed");
+  }
+
+  return res.json();
+},
 
   async createInvestment(
   planId: string,

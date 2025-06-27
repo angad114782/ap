@@ -33,6 +33,14 @@ const userSchema = new mongoose.Schema({
 },
 resetOTP: { type: String },
 resetOTPExpiry: { type: Date },
+registerOTP: { type: String },
+registerOTPExpiry: { type: Date },
+isVerified: { type: Boolean, default: false },
+status: {
+  type: String,
+  enum: ["Active", "Inactive"],
+  default: "Active",
+},
 
   profilePic: String,
   role: {

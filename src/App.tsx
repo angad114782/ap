@@ -31,6 +31,7 @@ import Portfolio from "./Pages/Portfolio";
 import Setmpin from "./Pages/SetMpin";
 import InvestmentPlanFinal from "./Pages/InvestmentPlanFinal";
 import EnterOtp from "./Pages/EnterOtp";
+import RegOtp from "./Pages/RegOtp";
 import ForgetPassword from "./Pages/ForgetPassword";
 import PDFViewer from "./Pages/PDFViewer";
 import {
@@ -141,6 +142,14 @@ const App = () => {
               element={
                 <MobileLayout>
                   <EnterOtp />
+                </MobileLayout>
+              }
+            />
+            <Route
+              path="/reg-otp"
+              element={
+                <MobileLayout>
+                  <RegOtp/>
                 </MobileLayout>
               }
             />

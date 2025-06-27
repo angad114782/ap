@@ -121,25 +121,36 @@ exports.getMyReferralTree = async (req, res) => {
 
 exports.getAllReferralHistory = async (req, res) => {
   try {
-    const allUsers = await User.find().select("_id name email mobile profilePic");
+  const allUsers = await User.find({ role: { $ne: "admin" } })
+      .select("_id name email mobile profilePic referralCode referredBy")
+      .populate({ path: "referredBy", select: "name referralCode profilePic email mobile" })
+      .sort({ _id: -1 }); // latest first
 
     const allHistories = await Promise.all(
       allUsers.map(async (user) => {
-        const treeEntry = await Refertree.findOne({ userId: user._id }); // ✅ correct model name
-        const bonusLogs = await ReferralEarningLog.find({ fromUser: user._id });
+        const treeEntry = await Refertree.findOne({ userId: user._id });
 
-        const bonusEarned = bonusLogs.reduce((sum, log) => sum + (log.amount || 0), 0);
+        // ✅ Fix: Get total earnings *received* by this user from referral logs
+        const referralLogs = await ReferralEarningLog.find({
+  earnedBy: user._id, // ✅ Correct field name
+  reason: "Investment Referral",
+});
+
+        const totalEarnings = referralLogs.reduce((sum, log) => sum + (log.amount || 0), 0);
+
+        const downlines = await User.find({ referredBy: user._id }).select("name mobile referralCode profilePic email");
 
         return {
           user,
+          referredBy: user.referredBy || null,
+          bonusEarned: totalEarnings,
           joinedAt: treeEntry?.joinedAt || null,
-          bonusEarned,
+          downlines,
         };
       })
     );
 
     return res.status(200).json({ downline: allHistories });
-
   } catch (err) {
     console.error("❌ Error in admin referral history:", err);
     return res.status(500).json({ message: "Server error", error: err.message });

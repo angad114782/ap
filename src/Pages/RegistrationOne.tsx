@@ -25,40 +25,44 @@ const Register = () => {
     }
   }, [searchParams]);
 
-  const handleRegister = async () => {
-    try {
-      setLoading(true);
+const handleRegister = async () => {
+  try {
+    setLoading(true);
 
-      if (!phone || !password || !referralId || !email) {
-        toast.error("All fields are required");
-        return;
-      }
-
-      const formattedMobile = phone.startsWith("+") ? phone : `+${phone}`;
-      const deviceId = Math.random().toString(36).substring(7);
-
-      const response = await axios.post(
-        `${import.meta.env.VITE_URL}/register`,
-        {
-          mobile: formattedMobile,
-          email,
-          password,
-          referralCode: referralId,
-          deviceId,
-        }
-      );
-
-      if (response.status === 200) {
-        localStorage.setItem("deviceId", deviceId);
-        toast.success("Registration successful!");
-        navigate("/login-register"); // Navigate to login since MPIN is set after login
-      }
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || "Registration failed");
-    } finally {
-      setLoading(false);
+    if (!phone || !password || !referralId || !email) {
+      toast.error("All fields are required");
+      return;
     }
-  };
+
+    const formattedMobile = phone.startsWith("+") ? phone : `+${phone}`;
+    const deviceId = Math.random().toString(36).substring(7);
+
+    // 🔁 Call OTP API, NOT actual registration
+    const response = await axios.post(`${import.meta.env.VITE_URL}/send-register-otp`, {
+      mobile: formattedMobile,
+      email,
+      password,
+      referralCode: referralId,
+      deviceId,
+    });
+
+    if (response.status === 200) {
+      localStorage.setItem("deviceId", deviceId);
+      toast.success("OTP sent to your email");
+      navigate("/reg-otp", {
+        state: {
+          email: email.trim(),
+          from: "registration",
+        },
+      });
+    }
+  } catch (error: any) {
+    toast.error(error.response?.data?.message || "Failed to send OTP");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <div className="flex flex-col h-full w-full bg-[#070707]  py-6 ">
