@@ -378,7 +378,7 @@ const Dashboard = () => {
                   id: item._id,
                   type: "Deposit",
                   plan: item.wallet || "N/A",
-                  profilePic: item.userId.profilePic,
+                  profilePic: item.userId?.profilePic,
                   profileName: item.userId?.name || "Unknown User",
                   mobile: item.userId?.mobile || "N/A",
                   amount: String(item.amount || 0),
